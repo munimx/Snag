@@ -7,7 +7,11 @@ import httpx
 from snag_mcp.client import SnagClient, error_json
 
 
-async def snag_replay_request(server_url: str, args: dict[str, object], auth_token: str | None) -> str:
+async def snag_replay_request(
+    server_url: str,
+    args: dict[str, object],
+    auth_token: str | None,
+) -> str:
     request_id = args.get("id")
     target_url = args.get("targetUrl")
     if not isinstance(request_id, str) or request_id == "":

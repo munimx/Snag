@@ -17,6 +17,43 @@ import { toCapturedRequest, toDelivery, toForwardRule } from '../lib/serializers
 import { wsHub } from '../ws/hub.js';
 
 const apiRoute: FastifyPluginAsync = async (fastify) => {
+  const protectedHeaders = new Set(['authorization', 'cookie', 'set-cookie', 'proxy-authorization']);
+
+  function sanitizeReplayHeaders(headers: Record<string, string>): Record<string, string> {
+    const sanitized: Record<string, string> = {};
+    for (const [key, value] of Object.entries(headers)) {
+      if (protectedHeaders.has(key.toLowerCase())) {
+        continue;
+      }
+      sanitized[key] = value;
+    }
+    return sanitized;
+  }
+
+  async function hasRequestAccess(requestId: string, userId: string | null): Promise<boolean> {
+    const target = await db.capturedRequest.findUnique({
+      where: { id: requestId },
+      select: {
+        endpoint: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!target) {
+      return false;
+    }
+
+    const ownerUserId = target.endpoint?.userId ?? null;
+    if (ownerUserId === null) {
+      return true;
+    }
+
+    return userId !== null && ownerUserId === userId;
+  }
+
   fastify.get<{
     Params: { token: string };
     Querystring: { cursor?: string; limit?: number; method?: string; search?: string };
@@ -127,6 +164,12 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
       return reply.status(422).send({ error: 'Validation failed', details: parsedParams.error.flatten() });
     }
 
+    const session = await getSessionFromRequest(request);
+    const canAccess = await hasRequestAccess(parsedParams.data.id, session?.userId ?? null);
+    if (!canAccess) {
+      return reply.status(404).send({ error: 'Request not found' });
+    }
+
     const existing = await db.capturedRequest.findUnique({
       where: { id: parsedParams.data.id },
       select: { id: true },
@@ -173,6 +216,12 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
         return reply.status(404).send({ error: 'Request not found' });
       }
 
+      const session = await getSessionFromRequest(request);
+      const canAccess = await hasRequestAccess(row.id, session?.userId ?? null);
+      if (!canAccess) {
+        return reply.status(404).send({ error: 'Request not found' });
+      }
+
       const startedAt = Date.now();
       let responseStatus: number | null = null;
       let responseBody: string | null = null;
@@ -181,7 +230,7 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
       try {
         const replayResponse = await fetch(parsedBody.data.targetUrl, {
           method: row.method,
-          headers: row.headers as Record<string, string>,
+          headers: sanitizeReplayHeaders(row.headers as Record<string, string>),
           body: row.body ?? undefined,
         });
 

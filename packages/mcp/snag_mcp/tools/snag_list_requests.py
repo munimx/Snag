@@ -7,7 +7,11 @@ import httpx
 from snag_mcp.client import SnagClient, error_json
 
 
-async def snag_list_requests(server_url: str, args: dict[str, object], auth_token: str | None) -> str:
+async def snag_list_requests(
+    server_url: str,
+    args: dict[str, object],
+    auth_token: str | None,
+) -> str:
     token = args.get("token")
     if not isinstance(token, str) or token == "":
         return error_json("token is required", kind="validation")

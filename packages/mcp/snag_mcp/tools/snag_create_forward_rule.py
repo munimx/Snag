@@ -7,7 +7,11 @@ import httpx
 from snag_mcp.client import SnagClient, error_json
 
 
-async def snag_create_forward_rule(server_url: str, args: dict[str, object], auth_token: str | None) -> str:
+async def snag_create_forward_rule(
+    server_url: str,
+    args: dict[str, object],
+    auth_token: str | None,
+) -> str:
     token = args.get("token")
     name = args.get("name")
     destination_url = args.get("destinationUrl")

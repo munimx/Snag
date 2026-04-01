@@ -33,7 +33,11 @@ async def _ws_wait(server_url: str, token: str, timeout_seconds: float) -> str |
                         return request_id
 
 
-async def snag_wait_for_request(server_url: str, args: dict[str, object], auth_token: str | None) -> str:
+async def snag_wait_for_request(
+    server_url: str,
+    args: dict[str, object],
+    auth_token: str | None,
+) -> str:
     token = args.get("token")
     if not isinstance(token, str) or token == "":
         return error_json("token is required", kind="validation")
@@ -42,14 +46,20 @@ async def snag_wait_for_request(server_url: str, args: dict[str, object], auth_t
         return error_json("timeoutMs must be a positive integer", kind="validation")
 
     try:
-        request_from_http = await SnagClient(server_url, auth_token=auth_token).wait_for_request(token=token)
+        request_from_http = await SnagClient(
+            server_url,
+            auth_token=auth_token,
+        ).wait_for_request(token=token)
         if request_from_http is not None:
             return request_from_http.model_dump_json()
 
         request_id = await _ws_wait(server_url, token, timeout_seconds=timeout_ms / 1000)
         if request_id is None:
             return json.dumps({"ok": False, "request": None})
-        request = await SnagClient(server_url, auth_token=auth_token).get_request(request_id=request_id)
+        request = await SnagClient(
+            server_url,
+            auth_token=auth_token,
+        ).get_request(request_id=request_id)
         return request.model_dump_json()
     except TimeoutError:
         return json.dumps({"ok": False, "request": None})

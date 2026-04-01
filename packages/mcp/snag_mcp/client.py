@@ -24,13 +24,20 @@ class SnagClient:
         if label is not None:
             payload["label"] = label
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(f"{self._server_url}/api/endpoints", json=payload, headers=self._headers())
+            response = await client.post(
+                f"{self._server_url}/api/endpoints",
+                json=payload,
+                headers=self._headers(),
+            )
             response.raise_for_status()
             return Endpoint.model_validate(response.json())
 
     async def delete_endpoint(self, token: str) -> dict[str, object]:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.delete(f"{self._server_url}/api/endpoints/{token}", headers=self._headers())
+            response = await client.delete(
+                f"{self._server_url}/api/endpoints/{token}",
+                headers=self._headers(),
+            )
             response.raise_for_status()
             if response.status_code == 204:
                 return {"ok": True}
@@ -62,7 +69,10 @@ class SnagClient:
 
     async def get_request(self, request_id: str) -> CapturedRequest:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.get(f"{self._server_url}/api/requests/{request_id}", headers=self._headers())
+            response = await client.get(
+                f"{self._server_url}/api/requests/{request_id}",
+                headers=self._headers(),
+            )
             response.raise_for_status()
             return CapturedRequest.model_validate(response.json())
 
@@ -78,7 +88,10 @@ class SnagClient:
 
     async def wait_for_request(self, token: str) -> CapturedRequest | None:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.get(f"{self._server_url}/api/endpoints/{token}/wait", headers=self._headers())
+            response = await client.get(
+                f"{self._server_url}/api/endpoints/{token}/wait",
+                headers=self._headers(),
+            )
             if response.status_code == 204:
                 return None
             response.raise_for_status()
