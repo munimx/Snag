@@ -1,0 +1,17 @@
+{
+  "name": "@snag/shared",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    "./types": "./src/types.ts",
+    "./ws-messages": "./src/ws-messages.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"No tests yet\""
+  }
+}

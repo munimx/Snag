@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Endpoint {
+  id        String            @id @default(cuid())
+  token     String            @unique
+  label     String?
+  userId    String?
+  expiresAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user      User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  requests  CapturedRequest[]
+  replays   Replay[]
+  flows     Flow[]
+  rules     ForwardRule[]
+  deliveries Delivery[]
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  endpoints Endpoint[]
+  sessions  Session[]
+  links     MagicLink[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt(sort: Desc)])
+}
+
+model MagicLink {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  email      String
+  userId     String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, createdAt(sort: Desc)])
+  @@index([expiresAt])
+}
+
+model CapturedRequest {
+  id         String   @id @default(cuid())
+  endpointId String
+  method     String
+  path       String
+  query      Json
+  headers    Json
+  body       String?
+  bodyType   String?
+  status     Int?
+  latencyMs  Int?
+  receivedAt DateTime @default(now())
+
+  endpoint Endpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  replays  Replay[]
+
+  @@index([endpointId, receivedAt(sort: Desc)])
+}
+
+model Replay {
+  id                String   @id @default(cuid())
+  endpointId        String
+  capturedRequestId String
+  targetUrl         String
+  responseStatus    Int?
+  responseHeaders   Json?
+  responseBody      String?
+  latencyMs         Int?
+  createdAt         DateTime @default(now())
+
+  endpoint        Endpoint       @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  capturedRequest CapturedRequest @relation(fields: [capturedRequestId], references: [id], onDelete: Cascade)
+}
+
+model Flow {
+  id        String   @id @default(cuid())
+  endpointId String
+  name      String
+  isEnabled Boolean  @default(true)
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  endpoint Endpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+}
+
+model ForwardRule {
+  id             String   @id @default(cuid())
+  endpointId     String
+  name           String?
+  enabled        Boolean  @default(true)
+  filterMethod   String?
+  filterBodyKey  String?
+  filterBodyVal  String?
+  destinationUrl String
+  retries        Int      @default(3)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  endpoint   Endpoint   @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  deliveries Delivery[]
+
+  @@index([endpointId, createdAt(sort: Desc)])
+}
+
+model Delivery {
+  id            String   @id @default(cuid())
+  endpointId    String
+  ruleId        String
+  requestId     String
+  targetUrl     String
+  status        Int?
+  latencyMs     Int?
+  attempt       Int      @default(1)
+  error         String?
+  createdAt     DateTime @default(now())
+
+  endpoint Endpoint    @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  rule     ForwardRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId, createdAt(sort: Desc)])
+  @@index([ruleId, createdAt(sort: Desc)])
+  @@index([requestId, createdAt(sort: Desc)])
+}

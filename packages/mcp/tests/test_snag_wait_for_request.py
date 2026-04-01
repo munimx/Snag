@@ -1,0 +1,35 @@
+from __future__ import annotations
+
+import json
+
+import httpx
+import pytest
+import respx
+
+from snag_mcp.tools.snag_wait_for_request import snag_wait_for_request
+
+
+@pytest.mark.asyncio
+async def test_snag_wait_for_request_returns_captured_request_from_http_wait() -> None:
+    with respx.mock(assert_all_called=True) as respx_mock:
+        respx_mock.get("http://localhost:8080/api/endpoints/tok_1/wait").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "id": "req_1",
+                    "endpointId": "ep_1",
+                    "method": "POST",
+                    "path": "/hooks",
+                    "query": {},
+                    "headers": {},
+                    "body": "{}",
+                    "bodyType": "json",
+                    "status": 200,
+                    "latencyMs": 12,
+                    "receivedAt": "2024-01-01T00:00:00.000Z",
+                },
+            )
+        )
+        result = await snag_wait_for_request("http://localhost:8080", {"token": "tok_1"}, None)
+    parsed = json.loads(result)
+    assert parsed["id"] == "req_1"
