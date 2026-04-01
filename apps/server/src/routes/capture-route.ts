@@ -40,12 +40,13 @@ const captureRoute: FastifyPluginAsync = async (fastify) => {
       const normalizedHeaders = normalizeHeaders(request.headers);
       const normalizedQuery = normalizeQuery(request.query);
       const normalizedBody = normalizeBody(request.body);
+      const requestPath = request.url.split('?', 1)[0] ?? request.url;
 
       const createdRequest = await db.capturedRequest.create({
         data: {
           endpointId: endpoint.id,
           method: request.method,
-          path: request.url.split('?')[0] ?? request.url,
+          path: requestPath,
           query: normalizedQuery,
           headers: normalizedHeaders,
           body: normalizedBody.body,

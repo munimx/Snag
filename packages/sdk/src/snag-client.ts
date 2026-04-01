@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import { Endpoint } from './endpoint.js';
 import { SnagSdkError } from './errors.js';
 import type { CreateEndpointOptions, EndpointInfo, SnagClientOptions, SnagWebSocketLike } from './types.js';
@@ -111,7 +113,7 @@ function deriveWsUrl(baseUrl: string): string {
 }
 
 function createToken(): string {
-  const random = Math.random().toString(36).slice(2, 10);
+  const random = randomBytes(6).toString('hex');
   return `sdk_${random}`;
 }
 

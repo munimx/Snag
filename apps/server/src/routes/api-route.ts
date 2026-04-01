@@ -134,6 +134,12 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
       return reply.status(422).send({ error: 'Validation failed', details: parsedParams.error.flatten() });
     }
 
+    const session = await getSessionFromRequest(request);
+    const canAccess = await hasRequestAccess(parsedParams.data.id, session?.userId ?? null);
+    if (!canAccess) {
+      return reply.status(404).send({ error: 'Request not found' });
+    }
+
     const row = await db.capturedRequest.findUnique({
       where: { id: parsedParams.data.id },
       select: {
@@ -170,18 +176,12 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ error: 'Request not found' });
     }
 
-    const existing = await db.capturedRequest.findUnique({
+    const deleted = await db.capturedRequest.deleteMany({
       where: { id: parsedParams.data.id },
-      select: { id: true },
     });
-
-    if (!existing) {
+    if (deleted.count === 0) {
       return reply.status(404).send({ error: 'Request not found' });
     }
-
-    await db.capturedRequest.delete({
-      where: { id: parsedParams.data.id },
-    });
 
     return reply.status(204).send();
   });

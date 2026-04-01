@@ -17,6 +17,9 @@ interface CapturedRequestRecord {
   status: number | null;
   latencyMs: number | null;
   receivedAt: Date;
+  endpoint?: {
+    userId: string | null;
+  };
 }
 
 interface ReplayRecord {
@@ -182,10 +185,30 @@ export function createMockDb() {
         select,
       }: {
         where: { id: string };
-        select?: SelectShape<CapturedRequestRecord>;
+        select?:
+          | SelectShape<CapturedRequestRecord>
+          | {
+              endpoint?: { select?: { userId?: boolean } };
+            };
       }) => {
         const record = requests.find((row) => row.id === where.id);
-        return record ? pick(record, select) : null;
+        if (!record) {
+          return null;
+        }
+
+        if (select && typeof select === 'object' && 'endpoint' in select && select.endpoint) {
+          const endpointSelect = typeof select.endpoint === 'object' ? select.endpoint.select : undefined;
+          const endpoint = endpoints.find((row) => row.id === record.endpointId);
+          return {
+            endpoint: endpoint
+              ? {
+                  ...(endpointSelect?.userId ? { userId: endpoint.userId } : {}),
+                }
+              : null,
+          };
+        }
+
+        return pick(record, select as SelectShape<CapturedRequestRecord>);
       },
       findMany: async ({
         where,
@@ -267,6 +290,15 @@ export function createMockDb() {
         }
         const [deleted] = requests.splice(index, 1);
         return deleted;
+      },
+      deleteMany: async ({ where }: { where: { id: string } }) => {
+        const before = requests.length;
+        for (let index = requests.length - 1; index >= 0; index -= 1) {
+          if (requests[index]?.id === where.id) {
+            requests.splice(index, 1);
+          }
+        }
+        return { count: before - requests.length };
       },
       updateMany: async ({ where, data }: { where: { id: string }; data: { status: number } }) => {
         const record = requests.find((row) => row.id === where.id);
