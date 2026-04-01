@@ -45,7 +45,7 @@
     "build": "pnpm run clean && pnpm run build:esm && pnpm run build:cjs && pnpm run build:types && pnpm run build:cjs:meta",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "pnpm run build && node --test test/**/*.test.mjs"
+    "test": "pnpm run build && node --test test/*.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
