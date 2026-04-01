@@ -76,7 +76,7 @@ export function setSessionCookie(reply: FastifyReply, token: string, expiresAt: 
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: requestIsProduction(reply.request),
     expires: expiresAt,
   });
 }
@@ -86,6 +86,10 @@ export function clearSessionCookie(reply: FastifyReply): void {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: requestIsProduction(reply.request),
   });
+}
+
+function requestIsProduction(request: FastifyRequest): boolean {
+  return request.server.config.NODE_ENV === 'production';
 }

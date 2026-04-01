@@ -11,3 +11,5 @@ coverage
 .DS_Store
 packages/mcp/.venv
 packages/mcp/__pycache__
+**/__pycache__/
+*.tsbuildinfo

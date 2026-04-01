@@ -32,7 +32,7 @@ export async function requestNoContent(fetchFn: typeof fetch, input: string, ini
     throw new SnagSdkError(`Network request failed: ${toErrorMessage(error)}`);
   }
 
-  if (!response.ok && response.status !== 204) {
+  if (!response.ok) {
     const bodyText = await safeReadText(response);
     throw new SnagHttpError(response.status, bodyText);
   }

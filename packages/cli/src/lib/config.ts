@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import * as os from 'node:os';
 import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
 
 interface CliConfig {
   token?: string;
@@ -52,7 +53,7 @@ export function getOrCreateToken(): string {
     return config.token;
   }
 
-  const token = `cli_${Math.random().toString(36).slice(2, 12)}`;
+  const token = `cli_${randomBytes(8).toString('hex')}`;
   saveConfig({ ...config, token });
   return token;
 }

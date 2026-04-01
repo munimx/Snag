@@ -1,11 +1,11 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 
 import { requestMagicLink } from '../../lib/auth';
 
-export default function LoginPage(): React.JSX.Element {
+function LoginPageContent(): React.JSX.Element {
   const searchParams = useSearchParams();
   const verified = searchParams.get('verified') === '1';
   const [email, setEmail] = useState<string>('');
@@ -86,5 +86,13 @@ export default function LoginPage(): React.JSX.Element {
         </div>
       ) : null}
     </main>
+  );
+}
+
+export default function LoginPage(): React.JSX.Element {
+  return (
+    <Suspense fallback={<main style={{ maxWidth: 560, margin: '0 auto', padding: '56px 24px' }}>Loading login…</main>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -88,11 +88,15 @@ async function deliverToTarget(
   body: string | null,
 ): Promise<{ status: number | null; latencyMs: number | null; error: string | null }> {
   const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+
   try {
     const response = await fetch(targetUrl, {
       method,
       headers,
       body: body ?? undefined,
+      signal: controller.signal,
     });
     return {
       status: response.status,
@@ -105,6 +109,8 @@ async function deliverToTarget(
       latencyMs: Date.now() - startedAt,
       error: error instanceof Error ? error.message : 'Unknown delivery error',
     };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
