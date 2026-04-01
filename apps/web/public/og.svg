@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Snag social preview">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1020" />
+      <stop offset="100%" stop-color="#1f2a44" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect x="100" y="140" width="1000" height="350" rx="24" fill="#111a33" stroke="#2e3a5e" />
+  <text x="150" y="240" fill="#e6edf3" font-size="64" font-family="Inter, Arial, sans-serif" font-weight="700">
+    Snag
+  </text>
+  <text x="150" y="310" fill="#9fb0d1" font-size="36" font-family="Inter, Arial, sans-serif">
+    Inspect, replay, and route webhooks in real time.
+  </text>
+  <text x="150" y="380" fill="#9fb0d1" font-size="28" font-family="Inter, Arial, sans-serif">
+    Open-source webhook inspector + tunnel + MCP support.
+  </text>
+</svg>
