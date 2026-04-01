@@ -1,0 +1,53 @@
+{
+  "name": "@snag/sdk",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/cjs/snag-client.js",
+  "module": "./dist/esm/snag-client.js",
+  "types": "./dist/types/snag-client.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/snag-client.d.ts",
+      "import": "./dist/esm/snag-client.js",
+      "require": "./dist/cjs/snag-client.js"
+    },
+    "./endpoint": {
+      "types": "./dist/types/endpoint.d.ts",
+      "import": "./dist/esm/endpoint.js",
+      "require": "./dist/cjs/endpoint.js"
+    },
+    "./captured-request": {
+      "types": "./dist/types/captured-request.d.ts",
+      "import": "./dist/esm/captured-request.js",
+      "require": "./dist/cjs/captured-request.js"
+    },
+    "./types": {
+      "types": "./dist/types/types.d.ts",
+      "import": "./dist/esm/types.js",
+      "require": "./dist/cjs/types.js"
+    },
+    "./errors": {
+      "types": "./dist/types/errors.d.ts",
+      "import": "./dist/esm/errors.js",
+      "require": "./dist/cjs/errors.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "node -e \"import('node:fs').then((fs) => fs.rmSync('dist', { recursive: true, force: true }))\"",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json",
+    "build:types": "tsc -p tsconfig.build.types.json",
+    "build:cjs:meta": "node -e \"import('node:fs').then((fs) => { fs.mkdirSync('dist/cjs', { recursive: true }); fs.writeFileSync('dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }, null, 2)); })\"",
+    "build": "pnpm run clean && pnpm run build:esm && pnpm run build:cjs && pnpm run build:types && pnpm run build:cjs:meta",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run build && node --test test/**/*.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
