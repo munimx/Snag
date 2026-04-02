@@ -2,11 +2,15 @@
 
 import type { CapturedRequest } from '@snag/shared/types';
 import type { ServerMessage } from '@snag/shared/ws-messages';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useEndpointSocket } from '../../hooks/useEndpointSocket';
 import { getRequestDetail, listRequests } from '../../lib/api';
 import { useAuth } from '../auth/AuthProvider';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { JsonDiffViewer } from './JsonDiffViewer';
 import { RequestDetail } from './RequestDetail';
 import { RequestList } from './RequestList';
@@ -17,8 +21,24 @@ interface ConsoleClientProps {
 
 const METHOD_OPTIONS = ['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
+function getSocketStatusMeta(state: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'closed'): {
+  label: string;
+  dotClassName: string;
+} {
+  if (state === 'connected') {
+    return { label: 'Connected', dotClassName: 'bg-emerald-500' };
+  }
+  if (state === 'connecting' || state === 'reconnecting') {
+    return { label: 'Reconnecting', dotClassName: 'bg-amber-400' };
+  }
+  return { label: 'Disconnected', dotClassName: 'bg-red-500' };
+}
+
 export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const selectedQueryId = searchParams.get('selected');
+  const hasAppliedQuerySelectionRef = useRef<boolean>(false);
   const [requests, setRequests] = useState<CapturedRequest[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [compareId, setCompareId] = useState<string | null>(null);
@@ -28,6 +48,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isHistoryBannerDismissed, setIsHistoryBannerDismissed] = useState<boolean>(false);
 
   const loadRequests = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -39,9 +60,6 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
         limit: 100,
       });
       setRequests(response.data);
-      if (!selectedId && response.data[0]) {
-        setSelectedId(response.data[0].id);
-      }
     } catch (caughtError: unknown) {
       const message = caughtError instanceof Error ? caughtError.message : 'Failed to load requests';
       setError(message);
@@ -82,6 +100,37 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
       });
   }, [compareId]);
 
+  useEffect(() => {
+    if (!selectedQueryId) {
+      hasAppliedQuerySelectionRef.current = true;
+      return;
+    }
+    hasAppliedQuerySelectionRef.current = false;
+  }, [selectedQueryId]);
+
+  useEffect(() => {
+    if (requests.length === 0) {
+      setSelectedId(null);
+      return;
+    }
+
+    if (selectedQueryId && !hasAppliedQuerySelectionRef.current) {
+      const matchedRequest = requests.find((request) => request.id === selectedQueryId);
+      if (matchedRequest) {
+        setSelectedId(matchedRequest.id);
+        hasAppliedQuerySelectionRef.current = true;
+        return;
+      }
+    }
+
+    setSelectedId((current) => {
+      if (current && requests.some((request) => request.id === current)) {
+        return current;
+      }
+      return requests[0]?.id ?? null;
+    });
+  }, [requests, selectedQueryId]);
+
   const onSocketMessage = useCallback((message: ServerMessage): void => {
     if (message.type !== 'request_captured') {
       return;
@@ -98,39 +147,29 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   const { state: socketState } = useEndpointSocket({ token, onMessage: onSocketMessage });
 
   const filteredCount = useMemo(() => requests.length, [requests.length]);
+  const socketStatus = getSocketStatusMeta(socketState);
 
   return (
-    <main style={{ padding: 16, height: '100vh' }}>
-      <header style={{ marginBottom: 12 }}>
-        <h1 style={{ marginBottom: 8 }}>Console · {token}</h1>
-        <div style={{ color: '#9fb0d1' }}>Socket: {socketState}</div>
-        <div style={{ color: '#9fb0d1', marginTop: 4 }}>
-          History: {user ? 'Full history (authenticated)' : 'Last 24h only (login for 30-day history)'}
-        </div>
-      </header>
-
-      <section
-        style={{
-          display: 'flex',
-          gap: 8,
-          marginBottom: 12,
-          alignItems: 'center',
-        }}
-      >
-        <label>
-          Method:{' '}
+    <main className="flex h-screen flex-col bg-background text-foreground">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Token</span>
+            <Badge variant="secondary" className="font-mono">
+              {token}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground">
+            <span className={`size-2 rounded-full ${socketStatus.dotClassName}`} aria-hidden />
+            <span className="text-xs font-medium uppercase tracking-wide">{socketStatus.label}</span>
+          </div>
           <select
             value={methodFilter}
             onChange={(event) => {
               setMethodFilter(event.target.value);
             }}
-            style={{
-              background: '#0f1730',
-              color: '#e6edf3',
-              border: '1px solid #2e3a5e',
-              borderRadius: 6,
-              padding: 6,
-            }}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label="Filter requests by method"
           >
             {METHOD_OPTIONS.map((method) => (
               <option key={method} value={method}>
@@ -138,66 +177,67 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
               </option>
             ))}
           </select>
-        </label>
-        <input
-          placeholder="Search path/body..."
-          value={searchFilter}
-          onChange={(event) => {
-            setSearchFilter(event.target.value);
-          }}
-          style={{
-            background: '#0f1730',
-            color: '#e6edf3',
-            border: '1px solid #2e3a5e',
-            borderRadius: 6,
-            padding: 6,
-            minWidth: 280,
-          }}
-        />
-        <button
-          onClick={() => {
-            void loadRequests();
-          }}
-          style={{
-            border: '1px solid #2e3a5e',
-            borderRadius: 6,
-            padding: '6px 12px',
-            background: '#111a33',
-            color: '#d7e5ff',
-          }}
-        >
-          Refresh
-        </button>
-        <span style={{ color: '#9fb0d1' }}>{filteredCount} request(s)</span>
-      </section>
+          <Input
+            placeholder="Search path/body..."
+            value={searchFilter}
+            onChange={(event) => {
+              setSearchFilter(event.target.value);
+            }}
+            className="w-full min-w-[240px] max-w-sm"
+          />
+          <Button
+            variant="outline"
+            onClick={() => {
+              void loadRequests();
+            }}
+          >
+            Refresh
+          </Button>
+          <Badge variant="outline">{filteredCount} requests</Badge>
+        </div>
+      </header>
 
-      {error ? <p style={{ color: '#ff8a8a' }}>{error}</p> : null}
+      {error ? <p className="px-4 py-2 text-sm text-red-400">{error}</p> : null}
 
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '360px 1fr',
-          border: '1px solid #2e3a5e',
-          borderRadius: 12,
-          overflow: 'hidden',
-          background: '#111a33',
-        }}
-      >
-        <RequestList
-          requests={requests}
-          selectedId={selectedId}
-          compareId={compareId}
-          isLoading={isLoading}
-          onSelect={(id) => {
-            setSelectedId(id);
-          }}
-          onCompare={(id) => {
-            setCompareId((current) => (current === id ? null : id));
-          }}
-        />
-        <div>
+      <section className="grid min-h-0 flex-1 grid-cols-[360px_minmax(0,1fr)] overflow-hidden border-t border-border">
+        <div className="flex min-h-0 flex-col border-r border-border">
+          {!user && !isHistoryBannerDismissed ? (
+            <div className="flex items-start justify-between gap-3 border-b border-border bg-muted/50 px-3 py-2 text-sm">
+              <p className="text-muted-foreground">
+                Showing last 24h only.{' '}
+                <a href="/login" className="font-medium text-primary underline underline-offset-4">
+                  Log in
+                </a>{' '}
+                for 30-day history.
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setIsHistoryBannerDismissed(true);
+                }}
+                aria-label="Dismiss history notice"
+              >
+                Dismiss
+              </Button>
+            </div>
+          ) : null}
+          <RequestList
+            requests={requests}
+            selectedId={selectedId}
+            compareId={compareId}
+            isLoading={isLoading}
+            onSelect={(id) => {
+              setSelectedId(id);
+            }}
+            onCompare={(id) => {
+              setCompareId((current) => (current === id ? null : id));
+            }}
+          />
+        </div>
+        <div className="min-h-0 overflow-y-auto">
           <RequestDetail request={selectedRequest} />
-          <JsonDiffViewer leftRequest={selectedRequest} rightRequest={compareRequest} />
+          {compareId ? <JsonDiffViewer leftRequest={selectedRequest} rightRequest={compareRequest} /> : null}
         </div>
       </section>
     </main>

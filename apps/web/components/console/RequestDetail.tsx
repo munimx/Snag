@@ -4,6 +4,16 @@ import type { CapturedRequest } from '@snag/shared/types';
 import { useState } from 'react';
 
 import { copyText, toCurl } from '../../lib/curl';
+import { Button } from '../ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ReplayPanel } from './ReplayPanel';
 
 interface RequestDetailProps {
@@ -15,7 +25,7 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
   const [copyError, setCopyError] = useState<string | null>(null);
 
   if (!request) {
-    return <div style={{ padding: 16, color: '#9fb0d1' }}>Select a request to view details.</div>;
+    return <div className="p-4 text-sm text-muted-foreground">Select a request to view details.</div>;
   }
 
   const curl = toCurl(request);
@@ -35,47 +45,92 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
   };
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2 style={{ marginTop: 0 }}>
+    <div className="p-4">
+      <h2 className="text-lg font-semibold">
         {request.method} {request.path}
       </h2>
-      <p style={{ color: '#9fb0d1' }}>Received: {new Date(request.receivedAt).toLocaleString()}</p>
+      <p className="mt-1 text-sm text-muted-foreground">Received: {new Date(request.receivedAt).toLocaleString()}</p>
 
-      <section>
-        <h3>Headers</h3>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(request.headers, null, 2)}</pre>
-      </section>
+      <Tabs defaultValue="headers" className="mt-4">
+        <TabsList>
+          <TabsTrigger value="headers">Headers</TabsTrigger>
+          <TabsTrigger value="body">Body</TabsTrigger>
+          <TabsTrigger value="query">Query</TabsTrigger>
+        </TabsList>
+        <TabsContent value="headers" className="rounded-md border border-border bg-muted/20 p-3">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Header</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(request.headers).length > 0 ? (
+                Object.entries(request.headers).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-mono text-xs">{key}</TableCell>
+                    <TableCell className="font-mono text-xs">{value}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-muted-foreground">
+                    No headers available.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
+        <TabsContent value="body" className="rounded-md border border-border bg-muted/20 p-3">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-background p-3 font-mono text-xs">
+            {request.body ?? 'No body'}
+          </pre>
+        </TabsContent>
+        <TabsContent value="query" className="rounded-md border border-border bg-muted/20 p-3">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Param</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(request.query).length > 0 ? (
+                Object.entries(request.query).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-mono text-xs">{key}</TableCell>
+                    <TableCell className="font-mono text-xs">{value}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-muted-foreground">
+                    No query parameters.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
+      </Tabs>
 
-      <section>
-        <h3>Query</h3>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(request.query, null, 2)}</pre>
-      </section>
-
-      <section>
-        <h3>Body</h3>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{request.body ?? 'No body'}</pre>
-      </section>
-
-      <section>
-        <h3>cURL</h3>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{curl}</pre>
-        <button
+      <section className="mt-4 space-y-2 rounded-md border border-border bg-muted/20 p-3">
+        <h3 className="text-sm font-medium">cURL</h3>
+        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-background p-3 font-mono text-xs">
+          {curl}
+        </pre>
+        <Button
+          variant="outline"
           onClick={() => {
             void onCopyCurl();
           }}
-          style={{
-            border: '1px solid #2e3a5e',
-            borderRadius: 8,
-            padding: '6px 10px',
-            color: '#d7e5ff',
-            background: '#0f1730',
-          }}
         >
           {copied ? 'Copied!' : 'Copy as cURL'}
-        </button>
-        {copyError ? <p style={{ color: '#ff8a8a' }}>{copyError}</p> : null}
+        </Button>
+        {copyError ? <p className="text-sm text-red-400">{copyError}</p> : null}
       </section>
-
       <ReplayPanel request={request} />
     </div>
   );

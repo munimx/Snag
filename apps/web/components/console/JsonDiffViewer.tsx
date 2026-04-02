@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import type React from 'react';
 
 import { diffJson, parseJsonBody } from '../../lib/json-diff';
+import { Badge } from '../ui/badge';
 
 interface JsonDiffViewerProps {
   leftRequest: CapturedRequest | null;
@@ -13,12 +14,12 @@ interface JsonDiffViewerProps {
 
 function badgeColor(status: 'added' | 'removed' | 'changed'): string {
   if (status === 'added') {
-    return '#1d5331';
+    return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
   }
   if (status === 'removed') {
-    return '#5a2732';
+    return 'border-red-500/40 bg-red-500/15 text-red-300';
   }
-  return '#37456f';
+  return 'border-blue-500/40 bg-blue-500/15 text-blue-300';
 }
 
 export function JsonDiffViewer({ leftRequest, rightRequest }: JsonDiffViewerProps): React.JSX.Element {
@@ -38,7 +39,7 @@ export function JsonDiffViewer({ leftRequest, rightRequest }: JsonDiffViewerProp
 
   if (!leftRequest || !rightRequest) {
     return (
-      <div style={{ borderTop: '1px solid #2e3a5e', padding: 16, color: '#9fb0d1' }}>
+      <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
         Choose a second request in the list to compare JSON bodies.
       </div>
     );
@@ -48,49 +49,39 @@ export function JsonDiffViewer({ leftRequest, rightRequest }: JsonDiffViewerProp
   const rightJson = parseJsonBody(rightRequest.body);
   if (leftJson === null || rightJson === null) {
     return (
-      <div style={{ borderTop: '1px solid #2e3a5e', padding: 16, color: '#ffb86b' }}>
+      <div className="border-t border-border px-4 py-3 text-sm text-amber-300">
         JSON diff is only available when both request bodies are valid JSON.
       </div>
     );
   }
 
   return (
-    <section style={{ borderTop: '1px solid #2e3a5e', padding: 16 }}>
-      <h3 style={{ marginTop: 0 }}>JSON Diff</h3>
-      {diffEntries.length === 0 ? <p style={{ color: '#9fb0d1' }}>No differences found.</p> : null}
+    <section className="border-t border-border p-4">
+      <h3 className="text-sm font-medium">JSON Diff</h3>
+      {diffEntries.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">No differences found.</p> : null}
       {diffEntries.map((entry) => (
         <div
           key={`${entry.path}-${entry.status}`}
-          style={{
-            border: '1px solid #2e3a5e',
-            borderRadius: 8,
-            padding: 12,
-            marginBottom: 8,
-            background: '#0f1730',
-          }}
+          className="mt-2 rounded-md border border-border bg-muted/20 p-3"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <strong>{entry.path}</strong>
-            <span
-              style={{
-                fontSize: 12,
-                textTransform: 'uppercase',
-                padding: '2px 8px',
-                borderRadius: 999,
-                background: badgeColor(entry.status),
-              }}
-            >
+          <div className="mb-2 flex items-center gap-2">
+            <strong className="font-mono text-xs">{entry.path}</strong>
+            <Badge className={badgeColor(entry.status)}>
               {entry.status}
-            </span>
+            </Badge>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div className="grid gap-2 md:grid-cols-2">
             <div>
-              <div style={{ color: '#9fb0d1', marginBottom: 4 }}>Before</div>
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{entry.before}</pre>
+              <div className="mb-1 text-xs text-muted-foreground">Before</div>
+              <pre className="whitespace-pre-wrap break-words rounded-md bg-background p-2 font-mono text-xs">
+                {entry.before}
+              </pre>
             </div>
             <div>
-              <div style={{ color: '#9fb0d1', marginBottom: 4 }}>After</div>
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{entry.after}</pre>
+              <div className="mb-1 text-xs text-muted-foreground">After</div>
+              <pre className="whitespace-pre-wrap break-words rounded-md bg-background p-2 font-mono text-xs">
+                {entry.after}
+              </pre>
             </div>
           </div>
         </div>

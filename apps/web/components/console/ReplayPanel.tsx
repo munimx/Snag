@@ -5,6 +5,8 @@ import { useState } from 'react';
 
 import { replayRequest } from '../../lib/api';
 import type { ReplayResponse } from '../../lib/types';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 
 interface ReplayPanelProps {
   request: CapturedRequest;
@@ -31,42 +33,28 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
   };
 
   return (
-    <section style={{ borderTop: '1px solid #243150', marginTop: 12, paddingTop: 12 }}>
-      <h3 style={{ marginTop: 0 }}>Replay</h3>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
+    <section className="mt-4 border-t border-border pt-4">
+      <h3 className="text-sm font-medium">Replay</h3>
+      <div className="mt-2 flex gap-2">
+        <Input
           value={targetUrl}
           onChange={(event) => {
             setTargetUrl(event.target.value);
           }}
-          style={{
-            flex: 1,
-            borderRadius: 8,
-            border: '1px solid #2e3a5e',
-            background: '#0f1730',
-            color: '#e6edf3',
-            padding: 8,
-          }}
+          className="flex-1"
         />
-        <button
+        <Button
           onClick={() => {
             void onReplay();
           }}
           disabled={loading}
-          style={{
-            border: 'none',
-            borderRadius: 8,
-            background: '#3b82f6',
-            color: '#fff',
-            padding: '8px 12px',
-          }}
         >
           {loading ? 'Replaying…' : 'Replay'}
-        </button>
+        </Button>
       </div>
-      {error ? <p style={{ color: '#ff8a8a' }}>{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
       {result ? (
-        <p style={{ color: '#9fb0d1' }}>
+        <p className="mt-2 text-sm text-muted-foreground">
           Replay status: {result.responseStatus ?? 'failed'} · latency: {result.latencyMs ?? '—'}ms
         </p>
       ) : null}
