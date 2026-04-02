@@ -1,35 +1,67 @@
 import type { Delivery } from '@snag/shared/types';
 
+import { Badge } from '../ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+
 interface DeliveryLogProps {
   deliveries: Delivery[];
 }
 
+function getStatusVariant(status: number | null): 'default' | 'secondary' | 'destructive' | 'outline' {
+  if (status === null) {
+    return 'outline';
+  }
+  if (status >= 200 && status < 300) {
+    return 'secondary';
+  }
+  if (status >= 400) {
+    return 'destructive';
+  }
+  return 'outline';
+}
+
+function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown time';
+  }
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+}
+
 export function DeliveryLog({ deliveries }: DeliveryLogProps): React.JSX.Element {
   if (deliveries.length === 0) {
-    return <p style={{ color: '#9fb0d1' }}>No delivery attempts yet.</p>;
+    return <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">No delivery attempts yet.</p>;
   }
 
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      {deliveries.map((delivery) => (
-        <article
-          key={delivery.id}
-          style={{
-            border: '1px solid #2e3a5e',
-            borderRadius: 8,
-            padding: 10,
-            background: '#111a33',
-            color: '#d7e5ff',
-          }}
-        >
-          <div style={{ fontWeight: 600 }}>
-            Attempt #{delivery.attempt} · Status {delivery.status ?? 'N/A'}
-          </div>
-          <div style={{ fontSize: 12, color: '#9fb0d1' }}>{delivery.targetUrl}</div>
-          <div style={{ fontSize: 12, color: '#9fb0d1' }}>Latency: {delivery.latencyMs ?? 0}ms</div>
-          {delivery.error ? <div style={{ color: '#ff8a8a' }}>{delivery.error}</div> : null}
-        </article>
-      ))}
+    <div className="rounded-lg border border-border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Attempt</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Latency</TableHead>
+            <TableHead>Timestamp</TableHead>
+            <TableHead>Error</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {deliveries.map((delivery) => (
+            <TableRow key={delivery.id}>
+              <TableCell className="font-medium">#{delivery.attempt}</TableCell>
+              <TableCell>
+                <Badge variant={getStatusVariant(delivery.status)}>{delivery.status ?? 'N/A'}</Badge>
+              </TableCell>
+              <TableCell>{delivery.latencyMs ?? 0}ms</TableCell>
+              <TableCell>{formatDateTime(delivery.createdAt)}</TableCell>
+              <TableCell className="max-w-[240px] truncate text-destructive">{delivery.error ?? '—'}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
