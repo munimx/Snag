@@ -2,7 +2,7 @@
 
 import type { CapturedRequest } from '@snag/shared/types';
 import { useState } from 'react';
-import { IconCheck, IconCopy, IconWorldWww } from '@tabler/icons-react';
+import { IconCheck, IconCopy, IconTerminal } from '@tabler/icons-react';
 
 import { copyText, toCurl } from '../../lib/curl';
 import { Badge } from '../ui/badge';
@@ -22,14 +22,24 @@ interface RequestDetailProps {
   request: CapturedRequest | null;
 }
 
+function getMethodVariant(method: string): 'get' | 'post' | 'put' | 'patch' | 'delete' | 'default' {
+  const methodLower = method.toLowerCase();
+  if (methodLower === 'get') return 'get';
+  if (methodLower === 'post') return 'post';
+  if (methodLower === 'put') return 'put';
+  if (methodLower === 'patch') return 'patch';
+  if (methodLower === 'delete') return 'delete';
+  return 'default';
+}
+
 export function RequestDetail({ request }: RequestDetailProps): React.JSX.Element {
   const [copied, setCopied] = useState<boolean>(false);
   const [copyError, setCopyError] = useState<string | null>(null);
 
   if (!request) {
     return (
-      <div className="flex h-full min-h-[360px] items-center justify-center rounded-xl border border-border/60 bg-card/55 p-4 text-sm text-muted-foreground">
-        <div className="rounded-lg border border-dashed border-border/65 bg-secondary/15 px-4 py-3">
+      <div className="flex h-full min-h-[360px] items-center justify-center rounded-xl border border-outline-variant/20 bg-surface-high/30 p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/40 px-5 py-4">
           Select a request to view details.
         </div>
       </div>
@@ -53,22 +63,26 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-border/65 bg-card/55 p-4">
+    <div className="space-y-5 rounded-xl border border-outline-variant/20 bg-surface-high/30 p-5">
+      {/* Request header */}
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge className="border-primary/55 bg-primary/15 text-primary">{request.method}</Badge>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant={getMethodVariant(request.method)}>{request.method}</Badge>
           <h2 className="font-mono text-sm text-foreground sm:text-base">{request.path}</h2>
         </div>
-        <p className="text-xs text-muted-foreground">Received {new Date(request.receivedAt).toLocaleString()}</p>
+        <p className="font-label text-[11px] uppercase tracking-extra-wide text-muted-foreground">
+          Received {new Date(request.receivedAt).toLocaleString()}
+        </p>
       </div>
 
-      <Tabs defaultValue="headers" className="mt-2">
-        <TabsList className="bg-secondary/35">
+      {/* Tabs for headers/body/query */}
+      <Tabs defaultValue="headers" className="mt-3">
+        <TabsList>
           <TabsTrigger value="headers">Headers</TabsTrigger>
           <TabsTrigger value="body">Body</TabsTrigger>
           <TabsTrigger value="query">Query</TabsTrigger>
         </TabsList>
-        <TabsContent value="headers" className="rounded-md border border-border/60 bg-secondary/20 p-3">
+        <TabsContent value="headers" className="rounded-lg border border-outline-variant/15 bg-surface-low/30 p-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -80,7 +94,7 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
               {Object.entries(request.headers).length > 0 ? (
                 Object.entries(request.headers).map(([key, value]) => (
                   <TableRow key={key}>
-                    <TableCell className="font-mono text-[11px]">{key}</TableCell>
+                    <TableCell className="font-mono text-[11px] text-primary/80">{key}</TableCell>
                     <TableCell className="font-mono text-[11px]">{value}</TableCell>
                   </TableRow>
                 ))
@@ -94,12 +108,12 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
             </TableBody>
           </Table>
         </TabsContent>
-        <TabsContent value="body" className="rounded-md border border-border/60 bg-secondary/20 p-3">
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-background/65 p-3 font-mono text-xs">
+        <TabsContent value="body" className="rounded-lg border border-outline-variant/15 bg-surface-low/30 p-4">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-surface-lowest/80 p-4 font-mono text-xs leading-relaxed">
             {request.body ?? 'No body'}
           </pre>
         </TabsContent>
-        <TabsContent value="query" className="rounded-md border border-border/60 bg-secondary/20 p-3">
+        <TabsContent value="query" className="rounded-lg border border-outline-variant/15 bg-surface-low/30 p-4">
           <Table>
             <TableHeader>
               <TableRow>
@@ -111,7 +125,7 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
               {Object.entries(request.query).length > 0 ? (
                 Object.entries(request.query).map(([key, value]) => (
                   <TableRow key={key}>
-                    <TableCell className="font-mono text-xs">{key}</TableCell>
+                    <TableCell className="font-mono text-xs text-primary/80">{key}</TableCell>
                     <TableCell className="font-mono text-xs">{value}</TableCell>
                   </TableRow>
                 ))
@@ -127,39 +141,42 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
         </TabsContent>
       </Tabs>
 
-      <section className="grid gap-4 rounded-md border border-border/60 bg-secondary/15 p-3 lg:grid-cols-[minmax(0,1fr)_240px]">
-        <div className="space-y-2">
-          <h3 className="inline-flex items-center gap-2 text-sm font-medium">
-            <IconWorldWww size={14} />
-            cURL
+      {/* cURL section */}
+      <section className="grid gap-4 rounded-lg border border-outline-variant/15 bg-surface-low/30 p-4 lg:grid-cols-[minmax(0,1fr)_200px]">
+        <div className="space-y-3">
+          <h3 className="inline-flex items-center gap-2 font-label text-xs font-medium uppercase tracking-extra-wide text-muted-foreground">
+            <IconTerminal size={14} className="text-primary/60" />
+            cURL command
           </h3>
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-background/65 p-3 font-mono text-xs">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-surface-lowest/80 p-4 font-mono text-xs leading-relaxed text-foreground/90">
             {curl}
           </pre>
         </div>
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Button
             variant="outline"
-            className="w-full justify-between border-border/70 bg-background/50"
+            className="w-full justify-between"
             onClick={() => {
               void onCopyCurl();
             }}
           >
             {copied ? (
               <span className="inline-flex items-center gap-2">
-                <IconCheck size={14} />
-                Copied
+                <IconCheck size={14} className="text-success" />
+                Copied!
               </span>
             ) : (
               <span className="inline-flex items-center gap-2">
                 <IconCopy size={14} />
-                Copy as cURL
+                Copy cURL
               </span>
             )}
           </Button>
-          {copyError ? <p className="text-xs text-red-400">{copyError}</p> : null}
+          {copyError ? <p className="text-xs text-destructive">{copyError}</p> : null}
         </div>
       </section>
+
+      {/* Replay panel */}
       <ReplayPanel request={request} />
     </div>
   );

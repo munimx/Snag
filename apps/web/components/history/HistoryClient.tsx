@@ -26,39 +26,22 @@ const RANGE_OPTIONS = [
 
 type RangeKey = (typeof RANGE_OPTIONS)[number]['key'];
 
-function getMethodBadgeClass(method: string): string {
-  if (method === 'GET') {
-    return 'border-blue-500/40 bg-blue-500/15 text-blue-300';
-  }
-  if (method === 'POST') {
-    return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
-  }
-  if (method === 'PUT') {
-    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
-  }
-  if (method === 'PATCH') {
-    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
-  }
-  if (method === 'DELETE') {
-    return 'border-red-500/40 bg-red-500/15 text-red-300';
-  }
-  return 'border-border bg-muted text-muted-foreground';
+function getMethodVariant(method: string): 'get' | 'post' | 'put' | 'patch' | 'delete' | 'default' {
+  const methodLower = method.toLowerCase();
+  if (methodLower === 'get') return 'get';
+  if (methodLower === 'post') return 'post';
+  if (methodLower === 'put') return 'put';
+  if (methodLower === 'patch') return 'patch';
+  if (methodLower === 'delete') return 'delete';
+  return 'default';
 }
 
-function getStatusBadgeClass(status: number | null): string {
-  if (status === null) {
-    return 'border-border bg-muted text-muted-foreground';
-  }
-  if (status >= 500) {
-    return 'border-red-500/40 bg-red-500/15 text-red-300';
-  }
-  if (status >= 400) {
-    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
-  }
-  if (status >= 300) {
-    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
-  }
-  return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
+function getStatusVariant(status: number | null): 'status2xx' | 'status3xx' | 'status4xx' | 'status5xx' | 'secondary' {
+  if (status === null) return 'secondary';
+  if (status >= 500) return 'status5xx';
+  if (status >= 400) return 'status4xx';
+  if (status >= 300) return 'status3xx';
+  return 'status2xx';
 }
 
 function getBodyTypeLabel(bodyType: string | null): string {
@@ -122,6 +105,7 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
     const cutoff = Date.now() - option.hours * 60 * 60 * 1000;
     return requests.filter((request) => new Date(request.receivedAt).getTime() >= cutoff);
   }, [rangeFilter, requests]);
+
   const stats = useMemo(() => {
     const errored = filteredRequests.filter((request) => (request.status ?? 0) >= 400).length;
     const successful = filteredRequests.filter((request) => {
@@ -138,56 +122,67 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
 
   return (
     <main className="min-h-[calc(100vh-5rem)] space-y-4 text-foreground">
-      <header className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="inline-flex items-center gap-2 text-xl font-semibold sm:text-2xl">
-            <IconHistory size={20} className="text-primary" />
+      {/* Header card */}
+      <header className="space-y-4 rounded-xl border border-outline-variant/20 bg-surface-high/30 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="inline-flex items-center gap-3 text-xl font-semibold tracking-tight sm:text-2xl">
+            <IconHistory size={22} className="text-primary" />
             Request History
           </h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <code className="rounded-lg border border-outline-variant/20 bg-surface-lowest/80 px-3 py-1.5 font-mono text-sm text-primary">
               {token}
-            </Badge>
-            <Button asChild size="sm" variant="outline" className="h-8 border-border/70 bg-background/70">
+            </code>
+            <Button asChild size="sm" variant="outline">
               <Link href={`/console/${token}`}>Back to console</Link>
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="inline-flex items-center gap-1.5 font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
               <IconDatabase size={12} />
               Requests
             </p>
-            <p className="mt-1 font-mono text-lg font-semibold">{filteredRequests.length}</p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums">{filteredRequests.length}</p>
           </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Successful</p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.successful}</p>
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Successful
+            </p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-success">{stats.successful}</p>
           </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="inline-flex items-center gap-1.5 font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
               <IconAlertTriangle size={12} />
               Errors
             </p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.errored}</p>
+            <p className={`mt-1.5 font-mono text-2xl font-semibold tabular-nums ${stats.errored > 0 ? 'text-destructive' : ''}`}>
+              {stats.errored}
+            </p>
           </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="inline-flex items-center gap-1.5 font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
               <IconGauge size={12} />
               Avg latency
             </p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}</p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums">
+              {stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}
+            </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+
+        {/* Filter bar */}
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-outline-variant/15 bg-surface-low/30 p-3">
           <select
             value={methodFilter}
             onChange={(event) => {
               setMethodFilter(event.target.value);
             }}
-            className="h-9 rounded-md border border-input bg-background/70 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-label="Filter requests by method"
+            className="h-9 rounded-lg border border-outline-variant/20 bg-surface-high/50 px-3 font-label text-xs uppercase tracking-wide text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            aria-label="Filter by method"
           >
             {METHOD_OPTIONS.map((method) => (
               <option key={method} value={method}>
@@ -196,14 +191,14 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
             ))}
           </select>
           <Input
-            placeholder="Search path/body..."
+            placeholder="Search path or body..."
             value={searchFilter}
             onChange={(event) => {
               setSearchFilter(event.target.value);
             }}
-            className="h-9 min-w-[220px] flex-1 bg-background/70"
+            className="h-9 min-w-[200px] flex-1"
           />
-          <div className="inline-flex items-center rounded-md border border-border/70 bg-secondary/35 p-1">
+          <div className="inline-flex items-center rounded-lg border border-outline-variant/20 bg-surface-high/30 p-1">
             {RANGE_OPTIONS.map((range) => (
               <Button
                 key={range.key}
@@ -212,44 +207,46 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
                 onClick={() => {
                   setRangeFilter(range.key);
                 }}
-                className="h-7 rounded-sm px-2 text-[11px] font-mono"
+                className="h-7 rounded-md px-3 font-mono text-[11px]"
               >
                 {range.label}
               </Button>
             ))}
           </div>
-          <Badge variant="outline" className="border-border/80 bg-background/60 text-[11px]">
+          <Badge variant="secondary" className="ml-auto font-mono text-[11px]">
             {filteredRequests.length} requests
           </Badge>
         </div>
       </header>
 
+      {/* Login banner */}
       {!user && !isHistoryBannerDismissed ? (
-        <div className="flex items-start justify-between gap-3 rounded-md border border-border bg-muted/45 px-3 py-2 text-sm">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/20 bg-accent/8 px-4 py-3 text-sm">
           <p className="text-muted-foreground">
-            Showing last 24h only.{' '}
-            <Link href="/login" className="font-medium text-primary underline underline-offset-4">
+            Showing last 24h.{' '}
+            <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
               Log in
             </Link>{' '}
             for 30-day history.
           </p>
           <Button
-            size="xs"
+            size="sm"
             variant="ghost"
             onClick={() => {
               setIsHistoryBannerDismissed(true);
             }}
-            aria-label="Dismiss history notice"
+            aria-label="Dismiss"
           >
             Dismiss
           </Button>
         </div>
       ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-border/70 bg-card/60">
+      {/* Table */}
+      <section className="overflow-hidden rounded-xl border border-outline-variant/20 bg-surface-high/30">
         <Table>
           <TableHeader>
-            <TableRow className="bg-secondary/20 hover:bg-secondary/20">
+            <TableRow>
               <TableHead>Method</TableHead>
               <TableHead>Path</TableHead>
               <TableHead>Status</TableHead>
@@ -262,14 +259,16 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
-                  <span className="rounded-md border border-border/60 bg-secondary/25 px-2 py-1">Loading requests…</span>
+                  <span className="inline-flex items-center gap-2 rounded-lg bg-surface-low/40 px-3 py-2 animate-shimmer">
+                    Loading requests...
+                  </span>
                 </TableCell>
               </TableRow>
             ) : null}
             {!isLoading && error ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-red-400">
-                  <span className="inline-flex items-center gap-2 rounded-md border border-red-500/35 bg-red-500/10 px-2 py-1 text-red-300">
+                <TableCell colSpan={6}>
+                  <span className="inline-flex items-center gap-2 rounded-lg border border-destructive/25 bg-destructive/8 px-3 py-2 text-destructive">
                     <IconAlertTriangle size={14} />
                     {error}
                   </span>
@@ -279,7 +278,7 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
             {!isLoading && !error && filteredRequests.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
-                  <span className="rounded-md border border-dashed border-border/65 bg-secondary/20 px-2 py-1">
+                  <span className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/30 px-3 py-2">
                     No requests found for the selected filters.
                   </span>
                 </TableCell>
@@ -300,18 +299,18 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
                         router.push(`/console/${encodeURIComponent(token)}?selected=${encodeURIComponent(request.id)}`);
                       }
                     }}
-                     className="cursor-pointer transition-colors hover:bg-secondary/20"
+                    className="cursor-pointer"
                   >
                     <TableCell>
-                      <Badge className={getMethodBadgeClass(request.method)}>{request.method}</Badge>
+                      <Badge variant={getMethodVariant(request.method)}>{request.method}</Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{request.path}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusBadgeClass(request.status)}>{request.status ?? '—'}</Badge>
+                      <Badge variant={getStatusVariant(request.status)}>{request.status ?? '—'}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{getBodyTypeLabel(request.bodyType)}</TableCell>
                     <TableCell>{formatReceivedAt(request.receivedAt)}</TableCell>
-                    <TableCell>{formatLatency(request.latencyMs)}</TableCell>
+                    <TableCell className="font-mono text-xs">{formatLatency(request.latencyMs)}</TableCell>
                   </TableRow>
                 ))
               : null}

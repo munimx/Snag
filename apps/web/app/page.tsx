@@ -1,126 +1,150 @@
 import type React from 'react';
 import Link from 'next/link';
-import {
-  IconBrandGithub,
-  IconRoute,
-  IconShieldCheck,
-  IconTerminal2,
-  IconTopologyStar3,
-  IconWaveSawTool,
-} from '@tabler/icons-react';
+import { IconBrandGithub, IconArrowRight } from '@tabler/icons-react';
 
 import { EndpointCreator } from '../components/landing/EndpointCreator';
 
 export default function LandingPage(): React.JSX.Element {
   return (
-    <main className="min-h-[calc(100vh-4rem)] text-foreground">
-      <div className="grid gap-8 pb-8 pt-8 lg:gap-10 lg:pt-10">
-        <section className="grid gap-8 rounded-2xl border border-border/70 bg-card/65 p-6 backdrop-blur-sm lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:p-8">
-          <div className="space-y-6">
-            <p className="inline-flex rounded-full border border-primary/45 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-primary">
-              Premium webhook orchestration
-            </p>
-            <div className="space-y-4">
-              <h1 className="max-w-2xl text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl">
-                Control your webhook edge from one command center
-              </h1>
-              <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
-                Capture traffic instantly, tunnel events into local dev, and route production-ready flows without
-                maintaining extra infrastructure.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/70 bg-background/55 p-3">
-              <p className="mb-2 text-xs uppercase tracking-[0.08em] text-muted-foreground">Install the CLI</p>
-              <code className="block overflow-x-auto rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-xs text-primary sm:text-sm">
-                curl -sL snag.sh | sh
-              </code>
-            </div>
-            <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">
-              <p className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">Zero-config endpoint spin up</p>
-              <p className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">Live payload replay + inspection</p>
-              <p className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">Built for teams shipping integrations</p>
-            </div>
-          </div>
-          <EndpointCreator />
-        </section>
+    <main className="min-h-[calc(100vh-4rem)]">
+      {/* Hero */}
+      <section className="mx-auto max-w-3xl py-16 text-center sm:py-24">
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          Webhook infrastructure
+          <br />
+          <span className="text-muted-foreground">for developers</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+          Capture, inspect, replay, and route webhooks. Open source with a CLI
+          tunnel and MCP support for AI agents.
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          >
+            Start building
+            <IconArrowRight size={16} />
+          </Link>
+          <a
+            href="https://github.com/munimx/Snag"
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <IconBrandGithub size={16} />
+            GitHub
+          </a>
+        </div>
+      </section>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-xl border border-border/60 bg-secondary/35 p-5">
-            <div className="mb-3 inline-flex size-8 items-center justify-center rounded-md bg-primary/15 text-primary">
-              <IconTerminal2 size={17} />
-            </div>
-            <h2 className="mb-2 text-lg font-semibold">Console</h2>
-            <p className="text-sm text-muted-foreground">
-              See every request in real time, inspect payloads, replay events, and debug failures with full context.
-            </p>
-          </article>
-          <article className="rounded-xl border border-border/60 bg-secondary/35 p-5">
-            <div className="mb-3 inline-flex size-8 items-center justify-center rounded-md bg-primary/15 text-primary">
-              <IconWaveSawTool size={17} />
-            </div>
-            <h2 className="mb-2 text-lg font-semibold">CLI Tunnel</h2>
-            <p className="text-sm text-muted-foreground">
-              Run <span className="font-mono">snag listen</span> to stream public webhooks directly to localhost with zero ingress setup.
-            </p>
-          </article>
-          <article className="rounded-xl border border-border/60 bg-secondary/35 p-5">
-            <div className="mb-3 inline-flex size-8 items-center justify-center rounded-md bg-primary/15 text-primary">
-              <IconTopologyStar3 size={17} />
-            </div>
-            <h2 className="mb-2 text-lg font-semibold">MCP Integration</h2>
-            <p className="text-sm text-muted-foreground">
-              Connect agents and internal tooling to create endpoints, monitor traffic, and automate integration checks.
-            </p>
-          </article>
-          <article className="rounded-xl border border-border/60 bg-secondary/35 p-5">
-            <div className="mb-3 inline-flex size-8 items-center justify-center rounded-md bg-primary/15 text-primary">
-              <IconRoute size={17} />
-            </div>
-            <h2 className="mb-2 text-lg font-semibold">Forwarding Rules</h2>
-            <p className="text-sm text-muted-foreground">
-              Fan out webhooks to multiple destinations with filters, retries, and delivery diagnostics.
-            </p>
-          </article>
-        </section>
+      {/* Try it */}
+      <section className="mx-auto max-w-2xl pb-16">
+        <EndpointCreator />
+      </section>
 
-        <section className="rounded-xl border border-border/60 bg-card/50 p-5">
-          <div className="mb-4 flex flex-wrap gap-2 text-xs text-muted-foreground sm:text-sm">
-            <p className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/30 px-3 py-1">
-              <IconShieldCheck size={14} className="text-primary" />
-              Private by default
+      {/* Code example */}
+      <section className="mx-auto max-w-3xl pb-20">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface-lowest">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+            <div className="flex gap-1.5">
+              <span className="size-3 rounded-full bg-muted-foreground/20" />
+              <span className="size-3 rounded-full bg-muted-foreground/20" />
+              <span className="size-3 rounded-full bg-muted-foreground/20" />
+            </div>
+            <span className="ml-2 text-xs text-muted-foreground">terminal</span>
+          </div>
+          <div className="p-5 font-mono text-sm leading-relaxed">
+            <p className="text-muted-foreground">
+              <span className="text-foreground/60">$</span>{' '}
+              <span className="text-foreground">npx snag-cli listen 3000</span>
             </p>
-            <p className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/30 px-3 py-1">
-              Request history and replay
+            <p className="mt-3 text-muted-foreground/70">
+              → Tunneling to http://localhost:3000
             </p>
-            <p className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/30 px-3 py-1">
-              Fast setup for local and cloud
+            <p className="text-muted-foreground/70">
+              → Public URL:{' '}
+              <span className="text-primary">https://snag.dev/h/abc123</span>
+            </p>
+            <p className="mt-3 text-muted-foreground/70">
+              <span className="text-emerald-400">POST</span>{' '}
+              /webhooks/stripe 200{' '}
+              <span className="text-muted-foreground/50">12ms</span>
+            </p>
+            <p className="text-muted-foreground/70">
+              <span className="text-emerald-400">POST</span>{' '}
+              /webhooks/github 200{' '}
+              <span className="text-muted-foreground/50">8ms</span>
             </p>
           </div>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href="/login"
-              className="inline-flex items-center rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              Log in
-            </Link>
-            <a
-              href="https://github.com/munimx/Snag"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              <IconBrandGithub size={14} />
-              GitHub
-            </a>
-            <Link
-              href="/history/demo"
-              className="inline-flex items-center rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              Explore history UI
-            </Link>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="border-t border-border py-20">
+        <div className="mx-auto grid max-w-4xl gap-12 sm:grid-cols-3 sm:gap-8">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Real-time console
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Watch requests arrive, inspect headers and bodies, replay with one
+              click.
+            </p>
           </div>
-        </section>
-      </div>
+          <div>
+            <h3 className="text-sm font-medium text-foreground">CLI tunnel</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Stream webhooks to localhost. No ngrok, no port forwarding, no
+              config.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Forwarding rules
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Route to multiple destinations with filters, retries, and delivery
+              logs.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-foreground">MCP server</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Let AI agents create endpoints, wait for webhooks, and inspect
+              payloads.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              TypeScript SDK
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Programmatic access. Create endpoints, subscribe to events, replay
+              requests.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Self-host</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Run on your own infrastructure. Postgres + Redis. Deploy anywhere.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="border-t border-border py-16 text-center">
+        <p className="text-sm text-muted-foreground">
+          Open source and free to use.{' '}
+          <a
+            href="https://github.com/munimx/Snag"
+            className="text-foreground underline underline-offset-4"
+          >
+            Star on GitHub
+          </a>
+        </p>
+      </section>
     </main>
   );
 }

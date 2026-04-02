@@ -1,10 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Snag favicon">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e3a8a" />
-      <stop offset="100%" stop-color="#312e81" />
+      <stop offset="0%" stop-color="#060e20"/>
+      <stop offset="100%" stop-color="#05183c"/>
     </linearGradient>
+    <linearGradient id="hook" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#47c4ff"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)" />
-  <path d="M16 26c0-4.418 3.582-8 8-8h16c4.418 0 8 3.582 8 8v1h-8v-1H24v12h16v-1h8v1c0 4.418-3.582 8-8 8H24c-4.418 0-8-3.582-8-8V26z" fill="#e6edf3"/>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Hook shape - represents webhook capture -->
+  <g filter="url(#glow)">
+    <path d="M20 20h8v4H24v16h12v-8h4v12H20V20z" fill="url(#hook)"/>
+    <circle cx="44" cy="24" r="6" fill="url(#hook)" opacity="0.8"/>
+    <path d="M40 24l8-8" stroke="#47c4ff" stroke-width="3" stroke-linecap="round"/>
+  </g>
 </svg>

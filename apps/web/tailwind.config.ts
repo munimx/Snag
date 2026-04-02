@@ -45,6 +45,34 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        surface: {
+          lowest: 'hsl(var(--surface-lowest))',
+          low: 'hsl(var(--surface-low))',
+          DEFAULT: 'hsl(var(--surface))',
+          high: 'hsl(var(--surface-high))',
+          highest: 'hsl(var(--surface-highest))',
+        },
+        method: {
+          get: 'hsl(var(--method-get))',
+          post: 'hsl(var(--method-post))',
+          put: 'hsl(var(--method-put))',
+          patch: 'hsl(var(--method-patch))',
+          delete: 'hsl(var(--method-delete))',
+        },
+        status: {
+          '2xx': 'hsl(var(--status-2xx))',
+          '3xx': 'hsl(var(--status-3xx))',
+          '4xx': 'hsl(var(--status-4xx))',
+          '5xx': 'hsl(var(--status-5xx))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -52,8 +80,8 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
     },
   },

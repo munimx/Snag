@@ -32,16 +32,15 @@ const METHOD_OPTIONS = ['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const
 
 function getSocketStatusMeta(state: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'closed'): {
   label: string;
-  glowClassName: string;
-  dotClassName: string;
+  className: string;
 } {
   if (state === 'connected') {
-    return { label: 'Connected', glowClassName: 'shadow-emerald-500/30', dotClassName: 'bg-emerald-500' };
+    return { label: 'Live', className: 'ws-connected' };
   }
   if (state === 'connecting' || state === 'reconnecting') {
-    return { label: 'Reconnecting', glowClassName: 'shadow-amber-400/30', dotClassName: 'bg-amber-400' };
+    return { label: 'Connecting', className: 'ws-connecting' };
   }
-  return { label: 'Disconnected', glowClassName: 'shadow-red-500/30', dotClassName: 'bg-red-500' };
+  return { label: 'Disconnected', className: 'ws-disconnected' };
 }
 
 export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element {
@@ -172,50 +171,75 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   }, [requests]);
 
   return (
-    <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-3">
-      <header className="rounded-xl border border-border/70 bg-card/65 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/30 px-3 py-2">
-            <IconTimeline size={14} className="text-primary/90" />
-            <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Token</span>
-            <Badge variant="secondary" className="font-mono text-xs">
+    <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-4">
+      {/* Header card */}
+      <header className="glass rounded-xl border border-outline-variant/20 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Token badge */}
+          <div className="inline-flex items-center gap-3 rounded-lg border border-outline-variant/20 bg-surface-low/50 px-4 py-2.5">
+            <IconTimeline size={16} className="text-primary" />
+            <span className="font-label text-[11px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Endpoint
+            </span>
+            <code className="rounded-md bg-surface-lowest/80 px-2.5 py-1 font-mono text-sm text-primary">
               {token}
-            </Badge>
+            </code>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-muted-foreground">
-            <span
-              className={`size-2 rounded-full ${socketStatus.dotClassName} ${socketStatus.glowClassName} shadow-[0_0_12px_currentColor]`}
-              aria-hidden
-            />
-            <span className="text-xs font-medium uppercase tracking-wide">{socketStatus.label}</span>
-          </div>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Captured</p>
-            <p className="mt-1 font-mono text-lg font-semibold">{filteredCount}</p>
-          </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Errors (4xx/5xx)</p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.errored}</p>
-          </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Avg latency</p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}</p>
-          </div>
-          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Replay-ready</p>
-            <p className="mt-1 font-mono text-lg font-semibold">{stats.replayable}</p>
+          
+          {/* WebSocket status */}
+          <div className={`inline-flex items-center gap-2.5 rounded-lg px-4 py-2.5 ${socketStatus.className}`}>
+            <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden />
+            <span className="font-label text-xs font-medium uppercase tracking-extra-wide">
+              {socketStatus.label}
+            </span>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/70 bg-secondary/20 p-2">
+
+        {/* Stats grid */}
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Captured
+            </p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-foreground">
+              {filteredCount}
+            </p>
+          </div>
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Errors
+            </p>
+            <p className={`mt-1.5 font-mono text-2xl font-semibold tabular-nums ${stats.errored > 0 ? 'text-destructive' : 'text-foreground'}`}>
+              {stats.errored}
+            </p>
+          </div>
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Avg latency
+            </p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-foreground">
+              {stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}
+            </p>
+          </div>
+          <div className="rounded-lg border border-outline-variant/15 bg-surface-high/40 px-4 py-3 transition-colors hover:bg-surface-high/60">
+            <p className="font-label text-[10px] font-medium uppercase tracking-extra-wide text-muted-foreground">
+              Replayable
+            </p>
+            <p className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-foreground">
+              {stats.replayable}
+            </p>
+          </div>
+        </div>
+
+        {/* Filter bar */}
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-outline-variant/15 bg-surface-low/30 p-3">
           <select
             value={methodFilter}
             onChange={(event) => {
               setMethodFilter(event.target.value);
             }}
-            className="h-9 rounded-md border border-input bg-background/85 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-label="Filter requests by method"
+            className="h-9 rounded-lg border border-outline-variant/20 bg-surface-high/50 px-3 font-label text-xs uppercase tracking-wide text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            aria-label="Filter by method"
           >
             {METHOD_OPTIONS.map((method) => (
               <option key={method} value={method}>
@@ -224,17 +248,16 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             ))}
           </select>
           <Input
-            placeholder="Search path/body..."
+            placeholder="Search path or body..."
             value={searchFilter}
             onChange={(event) => {
               setSearchFilter(event.target.value);
             }}
-            className="h-9 w-full min-w-[240px] max-w-sm bg-background/85"
+            className="h-9 w-full min-w-[200px] max-w-sm"
           />
           <Button
             variant="outline"
             size="sm"
-            className="h-9 border-border/80 bg-background/80"
             onClick={() => {
               void loadRequests();
             }}
@@ -242,10 +265,10 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             <IconRefresh size={14} />
             Refresh
           </Button>
-          <Badge variant="outline" className="border-border/80 bg-background/70 font-mono text-[11px]">
+          <Badge variant="secondary" className="ml-auto font-mono text-[11px]">
             {filteredCount} requests
           </Badge>
-          <Button asChild variant="ghost" size="sm" className="h-9">
+          <Button asChild variant="ghost" size="sm">
             <Link href={`/history/${token}`}>
               <IconHistory size={14} />
               History
@@ -254,31 +277,34 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
         </div>
       </header>
 
+      {/* Error banner */}
       {error ? (
-        <p className="inline-flex items-center gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-          <IconAlertTriangle size={14} />
+        <div className="inline-flex items-center gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <IconAlertTriangle size={16} />
           {error}
-        </p>
+        </div>
       ) : null}
 
-      <section className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)]">
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/70 bg-card/55">
+      {/* Main content split */}
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[400px_minmax(0,1fr)]">
+        {/* Request list panel */}
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-outline-variant/20 bg-surface-high/30">
           {!user && !isHistoryBannerDismissed ? (
-            <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/45 px-3 py-2 text-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-outline-variant/20 bg-accent/8 px-4 py-2.5 text-sm">
               <p className="text-muted-foreground">
-                Showing last 24h only.{' '}
-                <Link href="/login" className="font-medium text-primary underline underline-offset-4">
+                Showing last 24h.{' '}
+                <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
                   Log in
                 </Link>{' '}
                 for 30-day history.
               </p>
               <Button
-                size="xs"
+                size="sm"
                 variant="ghost"
                 onClick={() => {
                   setIsHistoryBannerDismissed(true);
                 }}
-                aria-label="Dismiss history notice"
+                aria-label="Dismiss"
               >
                 Dismiss
               </Button>
@@ -297,21 +323,23 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             }}
           />
         </div>
-         <div className="min-h-0 space-y-3 overflow-y-auto">
+
+        {/* Detail panel */}
+        <div className="min-h-0 space-y-4 overflow-y-auto">
           <RequestDetail request={selectedRequest} />
           {compareId ? (
-            <div className="space-y-2">
-              <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                <IconArrowsDiff size={13} />
+            <div className="space-y-3">
+              <p className="inline-flex items-center gap-2 font-label text-xs font-medium uppercase tracking-extra-wide text-muted-foreground">
+                <IconArrowsDiff size={14} />
                 Compare mode
               </p>
               <JsonDiffViewer leftRequest={selectedRequest} rightRequest={compareRequest} />
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-border/70 bg-card/40 px-4 py-3 text-xs text-muted-foreground">
+            <div className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/30 px-4 py-3 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-2">
-                <IconWaveSine size={14} />
-                Select <span className="font-medium text-foreground">Compare</span> on a request to open JSON diff mode.
+                <IconWaveSine size={14} className="text-primary/60" />
+                Click <span className="font-medium text-foreground">Compare</span> on a request to open JSON diff mode.
               </span>
             </div>
           )}

@@ -14,6 +14,14 @@ interface ReplayPanelProps {
   request: CapturedRequest;
 }
 
+function getStatusVariant(status: number | null): 'status2xx' | 'status3xx' | 'status4xx' | 'status5xx' | 'secondary' {
+  if (status === null) return 'secondary';
+  if (status >= 500) return 'status5xx';
+  if (status >= 400) return 'status4xx';
+  if (status >= 300) return 'status3xx';
+  return 'status2xx';
+}
+
 export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
   const [targetUrl, setTargetUrl] = useState<string>('http://localhost:3000/webhook');
   const [loading, setLoading] = useState<boolean>(false);
@@ -35,26 +43,28 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
   };
 
   return (
-    <section className="space-y-3 rounded-md border border-border/60 bg-secondary/20 p-3">
+    <section className="space-y-4 rounded-lg border border-outline-variant/15 bg-surface-low/30 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="inline-flex items-center gap-2 text-sm font-medium">
-          <IconSend2 size={14} />
-          Replay
+        <h3 className="inline-flex items-center gap-2 font-label text-xs font-medium uppercase tracking-extra-wide text-muted-foreground">
+          <IconSend2 size={14} className="text-primary/60" />
+          Replay request
         </h3>
-        <Badge variant="outline" className="border-border/80 bg-background/65 font-mono text-[10px] uppercase tracking-[0.08em]">
-          request {request.id.slice(0, 8)}
+        <Badge variant="secondary" className="font-mono text-[10px]">
+          {request.id.slice(0, 8)}
         </Badge>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
           value={targetUrl}
           onChange={(event) => {
             setTargetUrl(event.target.value);
           }}
+          placeholder="http://localhost:3000/webhook"
           className="flex-1 font-mono text-xs"
         />
         <Button
-          className="h-9 justify-between sm:min-w-[140px]"
+          className="justify-between sm:min-w-[140px]"
           onClick={() => {
             void onReplay();
           }}
@@ -63,7 +73,7 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
           {loading ? (
             <span className="inline-flex items-center gap-2">
               <IconLoader2 size={14} className="animate-spin" />
-              Replaying…
+              Sending...
             </span>
           ) : (
             <span className="inline-flex items-center gap-2">
@@ -73,17 +83,27 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
           )}
         </Button>
       </div>
+
       <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-        <IconWorld size={13} />
-        Send to your local or staging endpoint.
+        <IconWorld size={13} className="text-muted-foreground/60" />
+        Forward this request to your local or staging endpoint.
       </p>
+
       {error ? (
-        <p className="rounded-md border border-red-500/35 bg-red-500/10 px-2 py-1 text-xs text-red-300">{error}</p>
+        <div className="rounded-lg border border-destructive/25 bg-destructive/8 px-3 py-2 text-sm text-destructive">
+          {error}
+        </div>
       ) : null}
+
       {result ? (
-        <p className="rounded-md border border-border/60 bg-background/50 px-2 py-1 text-xs text-muted-foreground">
-          Replay status: {result.responseStatus ?? 'failed'} · latency: {result.latencyMs ?? '—'}ms
-        </p>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-outline-variant/15 bg-surface-high/40 px-3 py-2.5">
+          <Badge variant={getStatusVariant(result.responseStatus ?? null)}>
+            {result.responseStatus ?? 'Failed'}
+          </Badge>
+          <span className="font-label text-[11px] uppercase tracking-extra-wide text-muted-foreground">
+            Latency: <span className="font-mono text-foreground">{result.latencyMs ?? '—'}ms</span>
+          </span>
+        </div>
       ) : null}
     </section>
   );

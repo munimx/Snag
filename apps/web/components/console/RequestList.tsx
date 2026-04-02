@@ -14,39 +14,22 @@ interface RequestListProps {
   onCompare: (id: string) => void;
 }
 
-function getMethodBadgeClass(method: string): string {
-  if (method === 'GET') {
-    return 'border-blue-500/40 bg-blue-500/15 text-blue-300';
-  }
-  if (method === 'POST') {
-    return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
-  }
-  if (method === 'PUT') {
-    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
-  }
-  if (method === 'PATCH') {
-    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
-  }
-  if (method === 'DELETE') {
-    return 'border-red-500/40 bg-red-500/15 text-red-300';
-  }
-  return 'border-border bg-muted text-muted-foreground';
+function getMethodVariant(method: string): 'get' | 'post' | 'put' | 'patch' | 'delete' | 'default' {
+  const methodLower = method.toLowerCase();
+  if (methodLower === 'get') return 'get';
+  if (methodLower === 'post') return 'post';
+  if (methodLower === 'put') return 'put';
+  if (methodLower === 'patch') return 'patch';
+  if (methodLower === 'delete') return 'delete';
+  return 'default';
 }
 
-function getStatusBadgeClass(status: number | null): string {
-  if (status === null) {
-    return 'border-border bg-muted text-muted-foreground';
-  }
-  if (status >= 500) {
-    return 'border-red-500/40 bg-red-500/15 text-red-300';
-  }
-  if (status >= 400) {
-    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
-  }
-  if (status >= 300) {
-    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
-  }
-  return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
+function getStatusVariant(status: number | null): 'status2xx' | 'status3xx' | 'status4xx' | 'status5xx' | 'secondary' {
+  if (status === null) return 'secondary';
+  if (status >= 500) return 'status5xx';
+  if (status >= 400) return 'status4xx';
+  if (status >= 300) return 'status3xx';
+  return 'status2xx';
 }
 
 function formatRelativeTime(timestamp: string): string {
@@ -81,7 +64,7 @@ export function RequestList({
     return (
       <div className="space-y-2 p-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="h-20 animate-pulse rounded-lg border border-border/55 bg-secondary/30" />
+          <div key={index} className="h-20 animate-shimmer rounded-lg" />
         ))}
       </div>
     );
@@ -90,7 +73,7 @@ export function RequestList({
   if (requests.length === 0) {
     return (
       <div className="p-4">
-        <div className="rounded-lg border border-dashed border-border/70 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/30 px-4 py-6 text-center text-sm text-muted-foreground">
           No requests yet. Send a webhook to your endpoint to populate the feed.
         </div>
       </div>
@@ -108,29 +91,29 @@ export function RequestList({
               onClick={() => {
                 onSelect(request.id);
               }}
-              className={`w-full rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+              className={`w-full rounded-lg border px-3 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                 isSelected
-                  ? 'border-primary/60 bg-primary/12 shadow-[0_0_18px_hsl(var(--primary)/0.2)]'
-                  : 'border-border/45 bg-secondary/15 hover:border-border/70 hover:bg-secondary/35'
+                  ? 'border-primary/40 bg-primary/8 shadow-glow-sm'
+                  : 'border-outline-variant/15 bg-surface-high/30 hover:border-outline-variant/30 hover:bg-surface-high/60'
               }`}
             >
               <div className="flex items-center gap-2">
-                <Badge className={getMethodBadgeClass(request.method)}>{request.method}</Badge>
-                <span className="truncate text-sm font-medium">{request.path}</span>
+                <Badge variant={getMethodVariant(request.method)}>{request.method}</Badge>
+                <span className="truncate font-mono text-sm text-foreground">{request.path}</span>
               </div>
               <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                <Badge className={getStatusBadgeClass(request.status)}>{request.status ?? '—'}</Badge>
-                <span>{formatRelativeTime(request.receivedAt)}</span>
+                <Badge variant={getStatusVariant(request.status)}>{request.status ?? '—'}</Badge>
+                <span className="opacity-70">{formatRelativeTime(request.receivedAt)}</span>
               </div>
             </button>
-            <div className="mt-1 px-1">
+            <div className="mt-1.5 px-1">
               <Button
                 onClick={() => {
                   onCompare(request.id);
                 }}
-                variant={isComparing ? 'secondary' : 'outline'}
-                size="xs"
-                className="h-6 rounded-md border-border/70 bg-background/50 font-mono text-[10px] uppercase tracking-[0.08em]"
+                variant={isComparing ? 'secondary' : 'ghost'}
+                size="sm"
+                className="font-label text-[10px] uppercase tracking-extra-wide"
               >
                 <IconArrowsDiff size={12} />
                 {isComparing ? 'Comparing' : 'Compare'}

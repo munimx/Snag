@@ -3,14 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import {
-  IconArrowRight,
-  IconCheck,
-  IconCopy,
-  IconLoader2,
-  IconPlugConnected,
-  IconTerminal2,
-} from '@tabler/icons-react';
+import { IconArrowRight, IconCheck, IconCopy, IconLoader2 } from '@tabler/icons-react';
 
 import { createEndpoint } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -24,12 +17,10 @@ export function EndpointCreator(): React.JSX.Element {
   const [endpoint, setEndpoint] = useState<{ token: string; url: string } | null>(null);
   const [token, setToken] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleCreate = async (): Promise<void> => {
-    if (state === 'creating') {
-      return;
-    }
-
+    if (state === 'creating') return;
     setState('creating');
     setError(null);
 
@@ -37,152 +28,103 @@ export function EndpointCreator(): React.JSX.Element {
       const result = await createEndpoint();
       setEndpoint(result);
       setState('created');
-      toast({
-        title: 'Endpoint created',
-        description: `Token ${result.token} is ready to receive webhooks.`,
-      });
     } catch (caughtError: unknown) {
       const message = caughtError instanceof Error ? caughtError.message : 'Failed to create endpoint';
       setError(message);
       setState('idle');
-      toast({
-        title: 'Endpoint creation failed',
-        description: message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     }
   };
 
   const handleCopy = async (): Promise<void> => {
-    if (endpoint?.url) {
-      await navigator.clipboard.writeText(endpoint.url);
-      toast({
-        title: 'Copied',
-        description: 'Public endpoint URL copied to clipboard.',
-      });
-    }
+    if (!endpoint?.url) return;
+    await navigator.clipboard.writeText(endpoint.url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <section className="relative overflow-hidden rounded-xl border border-border/70 bg-card/70 p-6">
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/10 to-transparent" aria-hidden />
-      <div className="relative space-y-6">
-        <div className="space-y-2">
-          <p className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-primary">
-            <IconPlugConnected size={13} />
-            Quick start
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Spin up an endpoint in seconds</h2>
-          <p className="text-sm text-muted-foreground">
-            Create a tokenized public URL, send webhooks, then jump into real-time inspection and replay.
-          </p>
+  if (state === 'created' && endpoint) {
+    return (
+      <div className="rounded-xl border border-border bg-surface-lowest p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-emerald-400">
+          <IconCheck size={16} />
+          Endpoint created
         </div>
-
-        {state === 'created' && endpoint ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-primary/35 bg-primary/10 p-4">
-              <p className="mb-3 inline-flex items-center gap-2 text-xs text-primary">
-                <IconCheck size={14} />
-                Endpoint is live and accepting traffic
-              </p>
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Token</span>
-                  <code className="rounded bg-background/75 px-2 py-1 font-mono text-xs text-foreground">{endpoint.token}</code>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <code className="flex-1 rounded-md border border-border/60 bg-background/70 p-2 font-mono text-xs text-primary">
-                    {endpoint.url}
-                  </code>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 focus-visible:ring-primary/70"
-                    onClick={() => void handleCopy()}
-                  >
-                    <IconCopy size={14} />
-                    Copy URL
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button asChild className="h-9 flex-1 justify-between focus-visible:ring-primary/70">
-                <Link href={`/console/${endpoint.token}`}>
-                  Open live console
-                  <IconArrowRight size={14} />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-9 focus-visible:ring-primary/70"
-                onClick={() => {
-                  setEndpoint(null);
-                  setState('idle');
-                }}
-              >
-                Create another
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <Button
-              size="lg"
-              className="h-11 w-full justify-between rounded-md bg-gradient-to-r from-primary/95 to-accent/85 text-primary-foreground shadow-[0_0_24px_hsl(var(--primary)/0.35)]"
-              onClick={() => {
-                void handleCreate();
-              }}
-              disabled={state === 'creating'}
-            >
-              {state === 'creating' ? (
-                <span className="inline-flex items-center gap-2">
-                  <IconLoader2 className="animate-spin" size={15} />
-                  Provisioning endpoint...
-                </span>
-              ) : (
-                <>
-                  Create public endpoint
-                  <IconArrowRight size={14} />
-                </>
-              )}
-            </Button>
-            <div className="rounded-md border border-border/60 bg-secondary/25 p-3">
-              <p className="text-xs text-muted-foreground">No setup needed—your endpoint is generated server-side.</p>
-              <p className="mt-1 text-xs text-muted-foreground">Then run <span className="font-mono text-foreground">snag listen</span> to receive traffic in local dev.</p>
-            </div>
-          </div>
-        )}
-
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-        <div className="rounded-lg border border-border/70 bg-secondary/30 p-4">
-          <h3 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            <IconTerminal2 size={14} />
-            Open existing endpoint
-          </h3>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Input
-              placeholder="Enter endpoint token"
-              value={token}
-              onChange={(event) => {
-                setToken(event.target.value);
-              }}
-              className="flex-1 font-mono text-xs focus-visible:ring-primary/70"
-            />
-            <Button
-              className="h-9 rounded-md focus-visible:ring-primary/70"
-              onClick={() => {
-                if (token.trim()) {
-                  router.push(`/console/${encodeURIComponent(token.trim())}`);
-                }
-              }}
-            >
+        <div className="mb-4 flex items-center gap-2">
+          <code className="flex-1 truncate rounded-lg bg-background px-3 py-2 font-mono text-sm text-foreground">
+            {endpoint.url}
+          </code>
+          <button
+            onClick={() => void handleCopy()}
+            className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+          </button>
+        </div>
+        <div className="flex gap-3">
+          <Button asChild className="flex-1">
+            <Link href={`/console/${endpoint.token}`}>
               Open console
-            </Button>
-          </div>
+              <IconArrowRight size={14} />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setEndpoint(null);
+              setState('idle');
+            }}
+          >
+            New
+          </Button>
         </div>
       </div>
-    </section>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-surface-lowest p-6">
+      <p className="mb-4 text-sm text-muted-foreground">
+        Create an endpoint instantly, or open an existing one by token.
+      </p>
+      <div className="mb-4">
+        <Button
+          className="w-full"
+          onClick={() => void handleCreate()}
+          disabled={state === 'creating'}
+        >
+          {state === 'creating' ? (
+            <>
+              <IconLoader2 className="animate-spin" size={16} />
+              Creating...
+            </>
+          ) : (
+            <>
+              Create endpoint
+              <IconArrowRight size={14} />
+            </>
+          )}
+        </Button>
+      </div>
+      {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+      <div className="flex gap-2">
+        <Input
+          placeholder="Existing token"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          className="flex-1 font-mono text-sm"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => {
+            if (token.trim()) {
+              router.push(`/console/${encodeURIComponent(token.trim())}`);
+            }
+          }}
+        >
+          Open
+        </Button>
+      </div>
+    </div>
   );
 }

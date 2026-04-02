@@ -1,19 +1,80 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Snag social preview">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0b1020" />
-      <stop offset="100%" stop-color="#1f2a44" />
+      <stop offset="0%" stop-color="#060e20"/>
+      <stop offset="50%" stop-color="#05183c"/>
+      <stop offset="100%" stop-color="#060e20"/>
     </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#47c4ff"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1a40"/>
+      <stop offset="100%" stop-color="#05183c"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)" />
-  <rect x="100" y="140" width="1000" height="350" rx="24" fill="#111a33" stroke="#2e3a5e" />
-  <text x="150" y="240" fill="#e6edf3" font-size="64" font-family="Inter, Arial, sans-serif" font-weight="700">
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Decorative grid lines -->
+  <g stroke="#1e3a5a" stroke-width="1" opacity="0.3">
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+    <line x1="0" y1="157" x2="1200" y2="157"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="473" x2="1200" y2="473"/>
+  </g>
+  
+  <!-- Glowing orbs -->
+  <circle cx="950" cy="180" r="120" fill="#47c4ff" opacity="0.06"/>
+  <circle cx="250" cy="450" r="80" fill="#a78bfa" opacity="0.04"/>
+  
+  <!-- Main card -->
+  <rect x="100" y="140" width="1000" height="350" rx="24" fill="url(#card)" stroke="#1e3a5a" stroke-width="1"/>
+  
+  <!-- Hook icon -->
+  <g transform="translate(150, 200)" filter="url(#glow)">
+    <path d="M0 0h24v12H12v48h36v-24h12v36H0V0z" fill="url(#accent)" transform="scale(1.5)"/>
+    <circle cx="80" cy="20" r="18" fill="url(#accent)" opacity="0.8"/>
+    <path d="M68 20l24-24" stroke="#47c4ff" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="280" y="260" fill="#dee5ff" font-size="72" font-family="Space Grotesk, Inter, system-ui" font-weight="700" letter-spacing="-2">
     Snag
   </text>
-  <text x="150" y="310" fill="#9fb0d1" font-size="36" font-family="Inter, Arial, sans-serif">
-    Inspect, replay, and route webhooks in real time.
+  <text x="280" y="330" fill="#91aaeb" font-size="32" font-family="Space Grotesk, Inter, system-ui" font-weight="400">
+    Capture, inspect, and replay webhooks in real time
   </text>
-  <text x="150" y="380" fill="#9fb0d1" font-size="28" font-family="Inter, Arial, sans-serif">
-    Open-source webhook inspector + tunnel + MCP support.
+  
+  <!-- Feature badges -->
+  <g transform="translate(280, 370)">
+    <rect width="120" height="36" rx="6" fill="#47c4ff" fill-opacity="0.12" stroke="#47c4ff" stroke-opacity="0.3"/>
+    <text x="60" y="24" fill="#47c4ff" font-size="14" font-family="JetBrains Mono, monospace" font-weight="500" text-anchor="middle">OPEN SOURCE</text>
+  </g>
+  <g transform="translate(420, 370)">
+    <rect width="100" height="36" rx="6" fill="#34d399" fill-opacity="0.12" stroke="#34d399" stroke-opacity="0.3"/>
+    <text x="50" y="24" fill="#34d399" font-size="14" font-family="JetBrains Mono, monospace" font-weight="500" text-anchor="middle">CLI TUNNEL</text>
+  </g>
+  <g transform="translate(540, 370)">
+    <rect width="120" height="36" rx="6" fill="#a78bfa" fill-opacity="0.12" stroke="#a78bfa" stroke-opacity="0.3"/>
+    <text x="60" y="24" fill="#a78bfa" font-size="14" font-family="JetBrains Mono, monospace" font-weight="500" text-anchor="middle">MCP SUPPORT</text>
+  </g>
+  
+  <!-- URL -->
+  <text x="600" y="580" fill="#5b74b1" font-size="20" font-family="JetBrains Mono, monospace" text-anchor="middle">
+    snag.dev
   </text>
 </svg>
