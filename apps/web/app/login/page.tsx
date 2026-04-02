@@ -1,97 +1,149 @@
 'use client';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useState } from 'react';
 
-import { requestMagicLink } from '../../lib/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { requestMagicLink } from '@/lib/auth';
+
+type LoginState = 'idle' | 'sending' | 'sent';
 
 function LoginPageContent(): React.JSX.Element {
   const searchParams = useSearchParams();
-  const verified = searchParams.get('verified') === '1';
-  const [email, setEmail] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const from = searchParams.get('from');
+  const emailFromQuery = searchParams.get('email');
+  const [email, setEmail] = useState<string>(emailFromQuery ?? '');
+  const [state, setState] = useState<LoginState>(emailFromQuery ? 'sent' : 'idle');
   const [error, setError] = useState<string | null>(null);
   const [magicLinkUrl, setMagicLinkUrl] = useState<string | null>(null);
 
-  const statusText = useMemo(() => {
-    if (verified) {
-      return 'Magic link verified. You are now logged in.';
+  const handleSubmit = async (): Promise<void> => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || state === 'sending') {
+      return;
     }
-    return null;
-  }, [verified]);
 
-  const submit = async (): Promise<void> => {
-    setIsSubmitting(true);
+    setState('sending');
     setError(null);
+
     try {
-      const result = await requestMagicLink(email.trim().toLowerCase());
-      setMagicLinkUrl(result.magicLinkUrl);
+      const result = await requestMagicLink(normalizedEmail);
+      setEmail(normalizedEmail);
+      setMagicLinkUrl(result.magicLinkUrl ?? null);
+      setState('sent');
     } catch (caughtError: unknown) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Failed to request magic link');
-    } finally {
-      setIsSubmitting(false);
+      setError(caughtError instanceof Error ? caughtError.message : 'Failed to send magic link');
+      setState('idle');
     }
   };
 
-  return (
-    <main style={{ maxWidth: 560, margin: '0 auto', padding: '56px 24px' }}>
-      <h1 style={{ marginTop: 0 }}>Login to Snag</h1>
-      <p style={{ color: '#9fb0d1' }}>Enter your email and we will generate a magic link sign-in URL.</p>
-      {statusText ? <p style={{ color: '#9efcb3' }}>{statusText}</p> : null}
-      <div style={{ display: 'grid', gap: 12 }}>
-        <input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(event) => {
-            setEmail(event.target.value);
-          }}
-          style={{
-            background: '#0f1730',
-            color: '#e6edf3',
-            border: '1px solid #2e3a5e',
-            borderRadius: 8,
-            padding: 10,
-          }}
-        />
-        <button
-          type="button"
-          disabled={isSubmitting || email.trim() === ''}
-          onClick={() => {
-            void submit();
-          }}
-          style={{
-            background: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            padding: '10px 16px',
-            cursor: 'pointer',
-          }}
-        >
-          {isSubmitting ? 'Sending…' : 'Send magic link'}
-        </button>
-      </div>
+  if (state === 'sent') {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-4">
+        <div className="w-full max-w-[400px] space-y-6 rounded-lg border border-border bg-card p-8">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold text-primary">Check your email</h1>
+            <p className="text-sm text-muted-foreground">
+              We sent a magic link to <span className="font-semibold text-foreground">{email}</span>
+            </p>
+          </div>
 
-      {error ? <p style={{ color: '#ff8a8a' }}>{error}</p> : null}
+          {magicLinkUrl && process.env.NODE_ENV === 'development' ? (
+            <div className="space-y-2 rounded-md border border-border bg-secondary p-4">
+              <p className="text-xs text-muted-foreground">Development mode direct verification link:</p>
+              <a className="break-all text-sm text-primary hover:underline" href={magicLinkUrl}>
+                {magicLinkUrl}
+              </a>
+            </div>
+          ) : null}
 
-      {magicLinkUrl ? (
-        <div style={{ marginTop: 16 }}>
-          <p style={{ color: '#9fb0d1', marginBottom: 8 }}>
-            Development shortcut: open this link to verify (email delivery is not wired in this phase).
-          </p>
-          <a href={magicLinkUrl} style={{ color: '#7fb3ff', wordBreak: 'break-all' }}>
-            {magicLinkUrl}
-          </a>
+          <Button
+            className="w-full"
+            variant="outline"
+            onClick={() => {
+              setState('idle');
+              setEmail('');
+              setMagicLinkUrl(null);
+              setError(null);
+            }}
+          >
+            Send another
+          </Button>
         </div>
-      ) : null}
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-[400px] space-y-6 rounded-lg border border-border bg-card p-8">
+        <div className="space-y-2 text-center">
+          <Link className="inline-block" href="/">
+            <h1 className="text-3xl font-bold tracking-tight text-primary">SNAG</h1>
+          </Link>
+          <p className="text-sm text-muted-foreground">Sign in with magic link</p>
+        </div>
+
+        <div className="space-y-4">
+          <Input
+            className="w-full"
+            disabled={state === 'sending'}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setEmail(event.target.value);
+            }}
+            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+              if (event.key === 'Enter') {
+                void handleSubmit();
+              }
+            }}
+            placeholder="you@example.com"
+            type="email"
+            value={email}
+          />
+
+          <Button
+            className="w-full"
+            disabled={email.trim() === '' || state === 'sending'}
+            onClick={() => {
+              void handleSubmit();
+            }}
+          >
+            {state === 'sending' ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+                Sending...
+              </span>
+            ) : (
+              'Send magic link'
+            )}
+          </Button>
+
+          {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
+
+          {from ? <p className="text-center text-xs text-muted-foreground">You need to sign in to continue</p> : null}
+        </div>
+
+        <div className="text-center">
+          <Link className="text-sm text-muted-foreground hover:text-primary" href="/">
+            ← Back to home
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
 
 export default function LoginPage(): React.JSX.Element {
   return (
-    <Suspense fallback={<main style={{ maxWidth: 560, margin: '0 auto', padding: '56px 24px' }}>Loading login…</main>}>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </main>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );
