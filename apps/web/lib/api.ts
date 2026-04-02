@@ -13,17 +13,19 @@ function buildUrl(path: string): string {
   return `${webConfig.serverUrl}${path}`;
 }
 
-function generateToken(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID().replaceAll('-', '');
+export async function createEndpoint(label?: string): Promise<{ token: string; url: string }> {
+  const response = await fetch(buildUrl('/api/endpoints'), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ label }),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create endpoint (${response.status})`);
   }
 
-  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
-}
-
-export async function createEndpoint(): Promise<{ token: string; url: string }> {
-  const token = generateToken();
-  return { token, url: `${webConfig.serverUrl}/h/${token}` };
+  return (await response.json()) as { token: string; url: string };
 }
 
 export async function listRequests(
