@@ -12,6 +12,6 @@ RUN pnpm --filter @snag/server build
 FROM node:20-alpine AS runtime
 WORKDIR /app
 RUN corepack enable
-COPY --from=deps /app /app
+COPY --from=build /app /app
 EXPOSE 8080
 CMD ["pnpm", "--filter", "@snag/server", "start"]
