@@ -1284,15 +1284,15 @@ Track which phases are complete. Update this section as work is merged to `main`
 
 | Phase | Status | Notes |
 |---|---|---|
-| Phase 0 — Repo Setup | ☐ Not started | |
-| Phase 1 — Server Core | ☐ Not started | |
-| Phase 2 — Web Console | ☐ Not started | |
-| Phase 3 — CLI | ☐ Not started | |
-| Phase 4 — Forwarding Rules | ☐ Not started | |
-| Phase 5 — MCP Server | ☐ Not started | |
-| Phase 6 — SDK | ☐ Not started | |
-| Phase 7 — Auth | ☐ Not started | |
-| Phase 8 — Polish & Deploy | ☐ Not started | |
+| Phase 0 — Repo Setup | ✅ Complete | |
+| Phase 1 — Server Core | ✅ Complete | |
+| Phase 2 — Web Console | ✅ Complete | |
+| Phase 3 — CLI | ✅ Complete | |
+| Phase 4 — Forwarding Rules | ✅ Complete | |
+| Phase 5 — MCP Server | ✅ Complete | |
+| Phase 6 — SDK | ✅ Complete | |
+| Phase 7 — Auth | ✅ Complete | |
+| Phase 8 — Polish & Deploy | ⚙ In progress | Deployed config updated; Fly first deploy blocked by Dockerfile path in fly.toml |
 
 **Legend:** ☐ Not started · ⚙ In progress · ✅ Complete
 
