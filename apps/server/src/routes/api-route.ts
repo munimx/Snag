@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { getHistoryCutoff, getSessionFromRequest } from '../lib/auth.js';
+import { addHours, createToken, getHistoryCutoff, getSessionFromRequest } from '../lib/auth.js';
 import { db } from '../lib/db.js';
 import {
+  createEndpointBodySchema,
   createRuleBodySchema,
   listRequestsQuerySchema,
   listDeliveriesQuerySchema,
@@ -18,6 +19,141 @@ import { wsHub } from '../ws/hub.js';
 
 const apiRoute: FastifyPluginAsync = async (fastify) => {
   const protectedHeaders = new Set(['authorization', 'cookie', 'set-cookie', 'proxy-authorization']);
+
+  interface EndpointResponseShape {
+    id: string;
+    token: string;
+    label: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+
+  function getPreferredHeaderValue(header: string | string[] | undefined): string | null {
+    if (Array.isArray(header)) {
+      return header[0]?.split(',')[0]?.trim() ?? null;
+    }
+    if (typeof header === 'string') {
+      return header.split(',')[0]?.trim() ?? null;
+    }
+    return null;
+  }
+
+  function buildCaptureUrl(token: string, request: { protocol: string; headers: Record<string, unknown> }): string {
+    const forwardedProto = getPreferredHeaderValue(
+      request.headers['x-forwarded-proto'] as string | string[] | undefined,
+    );
+    const forwardedHost = getPreferredHeaderValue(request.headers['x-forwarded-host'] as string | string[] | undefined);
+    const host = forwardedHost ?? getPreferredHeaderValue(request.headers.host as string | string[] | undefined);
+    const protocol = forwardedProto ?? request.protocol;
+    if (!host) {
+      return `/h/${token}`;
+    }
+    return `${protocol}://${host}/h/${token}`;
+  }
+
+  function toEndpointResponse(endpoint: EndpointResponseShape, request: { protocol: string; headers: Record<string, unknown> }) {
+    return {
+      ...endpoint,
+      createdAt: endpoint.createdAt.toISOString(),
+      updatedAt: endpoint.updatedAt.toISOString(),
+      url: buildCaptureUrl(endpoint.token, request),
+    };
+  }
+
+  function generateEndpointToken(): string {
+    return createToken('ep').replace(/^ep_/, 'tok_');
+  }
+
+  fastify.get('/api/endpoints', async (request, reply) => {
+    const session = await getSessionFromRequest(request);
+    if (!session) {
+      return reply.status(401).send({ error: 'Authentication required' });
+    }
+
+    const endpoints = await db.endpoint.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        token: true,
+        label: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return reply.status(200).send(endpoints.map((endpoint) => toEndpointResponse(endpoint, request)));
+  });
+
+  fastify.post('/api/endpoints', async (request, reply) => {
+    const parsedBody = createEndpointBodySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      return reply.status(422).send({ error: 'Validation failed', details: parsedBody.error.flatten() });
+    }
+
+    const session = await getSessionFromRequest(request);
+    const trimmedLabel = parsedBody.data.label?.trim();
+    const requestedToken = parsedBody.data.token?.trim();
+    const token = requestedToken && requestedToken.length > 0 ? requestedToken : generateEndpointToken();
+    const now = new Date();
+
+    const existingEndpoint = await db.endpoint.findUnique({
+      where: { token },
+      select: { id: true },
+    });
+
+    if (existingEndpoint) {
+      return reply.status(409).send({ error: 'Endpoint token already exists' });
+    }
+
+    const createdEndpoint = await db.endpoint.create({
+      data: {
+        token,
+        label: trimmedLabel && trimmedLabel.length > 0 ? trimmedLabel : null,
+        userId: session?.userId ?? null,
+        expiresAt: session ? null : addHours(now, 24),
+      },
+      select: {
+        id: true,
+        token: true,
+        label: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return reply.status(201).send({
+      ...toEndpointResponse(createdEndpoint, request),
+    });
+  });
+
+  fastify.delete<{ Params: { token: string } }>('/api/endpoints/:token', async (request, reply) => {
+    const parsedParams = tokenParamsSchema.safeParse(request.params);
+    if (!parsedParams.success) {
+      return reply.status(422).send({ error: 'Validation failed', details: parsedParams.error.flatten() });
+    }
+
+    const endpoint = await db.endpoint.findUnique({
+      where: { token: parsedParams.data.token },
+      select: { id: true, userId: true },
+    });
+
+    if (!endpoint) {
+      return reply.status(404).send({ error: 'Endpoint not found' });
+    }
+
+    if (endpoint.userId) {
+      const session = await getSessionFromRequest(request);
+      if (!session || session.userId !== endpoint.userId) {
+        return reply.status(404).send({ error: 'Endpoint not found' });
+      }
+    }
+
+    await db.endpoint.delete({
+      where: { id: endpoint.id },
+    });
+    return reply.status(204).send();
+  });
 
   function sanitizeReplayHeaders(headers: Record<string, string>): Record<string, string> {
     const sanitized: Record<string, string> = {};

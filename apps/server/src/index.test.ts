@@ -99,6 +99,66 @@ describe('server core', () => {
     await app.close();
   });
 
+  it('creates endpoint via API and supports delete by token', async () => {
+    const { buildApp } = await import('./index.js');
+    const app = await buildApp({
+      DATABASE_URL: 'postgres://localhost:5432/snag',
+      HOST: '127.0.0.1',
+      PORT: 8080,
+      NODE_ENV: 'test',
+      BODY_LIMIT_BYTES: 1024 * 1024,
+      RATE_LIMIT_MAX_PER_MINUTE: 100,
+      WAIT_TIMEOUT_MS: 50,
+      REDIS_URL: 'redis://127.0.0.1:6379',
+      DELIVERY_QUEUE_NAME: 'delivery-forwarding',
+      ENABLE_DELIVERY_WORKER: false,
+      MAGIC_LINK_TTL_MINUTES: 15,
+      SESSION_TTL_HOURS: 24 * 30,
+      APP_URL: 'http://localhost:3000',
+    });
+
+    const createEndpointResponse = await app.inject({
+      method: 'POST',
+      url: '/api/endpoints',
+      payload: {
+        token: 'api-endpoint-token',
+        label: 'API test endpoint',
+      },
+    });
+    expect(createEndpointResponse.statusCode).toBe(201);
+    const createdEndpoint = createEndpointResponse.json<{
+      token: string;
+      label: string | null;
+      url: string;
+    }>();
+    expect(createdEndpoint.token).toBe('api-endpoint-token');
+    expect(createdEndpoint.label).toBe('API test endpoint');
+    expect(createdEndpoint.url.endsWith('/h/api-endpoint-token')).toBe(true);
+
+    const duplicateCreateResponse = await app.inject({
+      method: 'POST',
+      url: '/api/endpoints',
+      payload: {
+        token: 'api-endpoint-token',
+      },
+    });
+    expect(duplicateCreateResponse.statusCode).toBe(409);
+
+    const deleteEndpointResponse = await app.inject({
+      method: 'DELETE',
+      url: '/api/endpoints/api-endpoint-token',
+    });
+    expect(deleteEndpointResponse.statusCode).toBe(204);
+
+    const requestsAfterDeleteResponse = await app.inject({
+      method: 'GET',
+      url: '/api/endpoints/api-endpoint-token/requests?limit=10',
+    });
+    expect(requestsAfterDeleteResponse.statusCode).toBe(404);
+
+    await app.close();
+  });
+
   it('returns request detail and supports deletion', async () => {
     const { buildApp } = await import('./index.js');
     const app = await buildApp({
@@ -285,6 +345,86 @@ describe('server core', () => {
       },
     });
     expect(logoutResponse.statusCode).toBe(200);
+
+    await app.close();
+  });
+
+  it('lists endpoints for authenticated user only', async () => {
+    const { buildApp } = await import('./index.js');
+    const app = await buildApp({
+      DATABASE_URL: 'postgres://localhost:5432/snag',
+      HOST: '127.0.0.1',
+      PORT: 8080,
+      NODE_ENV: 'test',
+      BODY_LIMIT_BYTES: 1024 * 1024,
+      RATE_LIMIT_MAX_PER_MINUTE: 100,
+      WAIT_TIMEOUT_MS: 50,
+      REDIS_URL: 'redis://127.0.0.1:6379',
+      DELIVERY_QUEUE_NAME: 'delivery-forwarding',
+      ENABLE_DELIVERY_WORKER: false,
+      MAGIC_LINK_TTL_MINUTES: 15,
+      SESSION_TTL_HOURS: 24 * 30,
+      APP_URL: 'http://localhost:3000',
+    });
+
+    const unauthorizedListResponse = await app.inject({
+      method: 'GET',
+      url: '/api/endpoints',
+    });
+    expect(unauthorizedListResponse.statusCode).toBe(401);
+
+    const magicLinkResponse = await app.inject({
+      method: 'POST',
+      url: '/api/auth/magic-link',
+      payload: { email: 'endpoint-owner@example.com' },
+    });
+    expect(magicLinkResponse.statusCode).toBe(200);
+
+    const magicLinkPayload = magicLinkResponse.json<{ magicLinkUrl: string }>();
+    const verifyToken = new URL(magicLinkPayload.magicLinkUrl).searchParams.get('token');
+    expect(verifyToken).toBeTruthy();
+
+    const verifyResponse = await app.inject({
+      method: 'GET',
+      url: `/api/auth/verify?token=${verifyToken ?? ''}&mode=token`,
+    });
+    expect(verifyResponse.statusCode).toBe(200);
+    const sessionToken = verifyResponse.json<{ token: string }>().token;
+    expect(sessionToken.startsWith('sess_')).toBe(true);
+
+    const authCreateResponse = await app.inject({
+      method: 'POST',
+      url: '/api/endpoints',
+      headers: {
+        authorization: `Bearer ${sessionToken}`,
+      },
+      payload: {
+        token: 'owned-endpoint-token',
+        label: 'Owned endpoint',
+      },
+    });
+    expect(authCreateResponse.statusCode).toBe(201);
+
+    const guestCreateResponse = await app.inject({
+      method: 'POST',
+      url: '/api/endpoints',
+      payload: {
+        token: 'guest-endpoint-token',
+      },
+    });
+    expect(guestCreateResponse.statusCode).toBe(201);
+
+    const authorizedListResponse = await app.inject({
+      method: 'GET',
+      url: '/api/endpoints',
+      headers: {
+        authorization: `Bearer ${sessionToken}`,
+      },
+    });
+    expect(authorizedListResponse.statusCode).toBe(200);
+    const listedEndpoints = authorizedListResponse.json<Array<{ token: string }>>();
+    expect(listedEndpoints.length).toBe(1);
+    expect(listedEndpoints[0]?.token).toBe('owned-endpoint-token');
 
     await app.close();
   });

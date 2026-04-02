@@ -8,6 +8,11 @@ export const requestIdParamsSchema = z.object({
   id: z.string().min(1),
 });
 
+export const createEndpointBodySchema = z.object({
+  label: z.string().min(1).max(120).optional(),
+  token: z.string().min(1).max(128).optional(),
+});
+
 export const listRequestsQuerySchema = z.object({
   cursor: z.string().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
