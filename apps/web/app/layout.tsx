@@ -3,10 +3,11 @@ import type React from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { NavBar } from '../components/ui/NavBar';
+import { webConfig } from '../lib/config';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://snag.local'),
+  metadataBase: new URL(webConfig.appUrl),
   title: {
     default: 'Snag Web Console',
     template: '%s · Snag',
