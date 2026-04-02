@@ -1,8 +1,11 @@
 interface EndpointRecord {
   id: string;
   token: string;
+  label: string | null;
   userId: string | null;
   expiresAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface CapturedRequestRecord {
@@ -141,14 +144,46 @@ export function createMockDb() {
         where: { token: string };
         update: Record<string, unknown>;
         create: { token: string };
-        select?: { id?: boolean; token?: boolean };
+        select?: { id?: boolean; token?: boolean; label?: boolean; userId?: boolean; createdAt?: boolean; updatedAt?: boolean };
       }) => {
         void _update;
         let endpoint = endpoints.find((row) => row.token === where.token);
         if (!endpoint) {
-          endpoint = { id: createId('ep'), token: create.token, userId: null, expiresAt: null };
+          endpoint = {
+            id: createId('ep'),
+            token: create.token,
+            label: null,
+            userId: null,
+            expiresAt: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
           endpoints.push(endpoint);
         }
+        return pick(endpoint, select);
+      },
+      create: async ({
+        data,
+        select,
+      }: {
+        data: {
+          token: string;
+          label: string | null;
+          userId: string | null;
+          expiresAt: Date | null;
+        };
+        select?: { id?: boolean; token?: boolean; label?: boolean; userId?: boolean; createdAt?: boolean; updatedAt?: boolean };
+      }) => {
+        const endpoint: EndpointRecord = {
+          id: createId('ep'),
+          token: data.token,
+          label: data.label,
+          userId: data.userId,
+          expiresAt: data.expiresAt,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        endpoints.push(endpoint);
         return pick(endpoint, select);
       },
       findUnique: async ({
@@ -156,10 +191,33 @@ export function createMockDb() {
         select,
       }: {
         where: { token?: string; id?: string };
-        select?: { id?: boolean; token?: boolean; userId?: boolean };
+        select?: { id?: boolean; token?: boolean; label?: boolean; userId?: boolean; createdAt?: boolean; updatedAt?: boolean };
       }) => {
         const endpoint = endpoints.find((row) => row.token === where.token || row.id === where.id);
         return endpoint ? pick(endpoint, select) : null;
+      },
+      findMany: async ({
+        where,
+        select,
+      }: {
+        where: { userId?: string | null };
+        orderBy?: { createdAt: 'desc' };
+        select?: { id?: boolean; token?: boolean; label?: boolean; createdAt?: boolean; updatedAt?: boolean };
+      }) => {
+        let filtered = [...endpoints];
+        if (where.userId !== undefined) {
+          filtered = filtered.filter((row) => row.userId === where.userId);
+        }
+        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        return filtered.map((row) => pick(row, select));
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const index = endpoints.findIndex((row) => row.id === where.id);
+        if (index === -1) {
+          return null;
+        }
+        const [deleted] = endpoints.splice(index, 1);
+        return deleted;
       },
     },
     capturedRequest: {
