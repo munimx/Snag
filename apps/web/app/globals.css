@@ -2,30 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
+    --background: 222 55% 7%;
+    --foreground: 222 80% 95%;
+    --card: 222 44% 11%;
+    --card-foreground: 222 80% 95%;
+    --popover: 222 44% 11%;
+    --popover-foreground: 222 80% 95%;
+    --primary: 190 100% 60%;
+    --primary-foreground: 222 80% 12%;
+    --secondary: 223 26% 25%;
+    --secondary-foreground: 222 72% 93%;
+    --muted: 223 25% 18%;
+    --muted-foreground: 222 24% 70%;
+    --accent: 236 68% 66%;
+    --accent-foreground: 222 80% 10%;
+    --destructive: 353 80% 62%;
+    --destructive-foreground: 222 100% 97%;
+    --border: 224 24% 29%;
+    --input: 224 22% 20%;
+    --ring: 190 100% 60%;
+    --radius: 0.75rem;
   }
 }
 
@@ -34,37 +34,50 @@
     @apply border-border;
   }
 
+  html,
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Sora', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 18% 10%, hsl(var(--primary) / 0.14) 0%, transparent 40%),
+      radial-gradient(circle at 82% 0%, hsl(var(--accent) / 0.1) 0%, transparent 42%),
+      linear-gradient(170deg, hsl(224 56% 8%) 0%, hsl(222 55% 7%) 42%, hsl(220 62% 6%) 100%);
+    background-attachment: fixed;
   }
 
   code,
   pre,
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
   }
 
-  /* Syntax highlighting prep */
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
   pre {
-    @apply rounded-lg bg-secondary p-4 overflow-x-auto;
+    @apply overflow-x-auto rounded-lg border border-border/70 bg-secondary/50 p-4;
   }
 
-  /* Styled scrollbars */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-background;
+    @apply bg-background/80;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border;
+    @apply rounded-full bg-border/85;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted;
+    @apply bg-primary/65;
   }
 }

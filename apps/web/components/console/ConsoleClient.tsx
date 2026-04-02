@@ -2,8 +2,10 @@
 
 import type { CapturedRequest } from '@snag/shared/types';
 import type { ServerMessage } from '@snag/shared/ws-messages';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IconArrowsDiff, IconHistory, IconRefresh, IconTimeline, IconWaveSine } from '@tabler/icons-react';
 
 import { useEndpointSocket } from '../../hooks/useEndpointSocket';
 import { getRequestDetail, listRequests } from '../../lib/api';
@@ -23,15 +25,16 @@ const METHOD_OPTIONS = ['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const
 
 function getSocketStatusMeta(state: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'closed'): {
   label: string;
+  glowClassName: string;
   dotClassName: string;
 } {
   if (state === 'connected') {
-    return { label: 'Connected', dotClassName: 'bg-emerald-500' };
+    return { label: 'Connected', glowClassName: 'shadow-emerald-500/30', dotClassName: 'bg-emerald-500' };
   }
   if (state === 'connecting' || state === 'reconnecting') {
-    return { label: 'Reconnecting', dotClassName: 'bg-amber-400' };
+    return { label: 'Reconnecting', glowClassName: 'shadow-amber-400/30', dotClassName: 'bg-amber-400' };
   }
-  return { label: 'Disconnected', dotClassName: 'bg-red-500' };
+  return { label: 'Disconnected', glowClassName: 'shadow-red-500/30', dotClassName: 'bg-red-500' };
 }
 
 export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element {
@@ -150,17 +153,21 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   const socketStatus = getSocketStatusMeta(socketState);
 
   return (
-    <main className="flex h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Token</span>
-            <Badge variant="secondary" className="font-mono">
+    <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-4">
+      <header className="rounded-xl border border-border/70 bg-card/60 p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/40 px-3 py-2">
+            <IconTimeline size={14} className="text-primary" />
+            <span className="text-xs text-muted-foreground">Token</span>
+            <Badge variant="secondary" className="font-mono text-xs">
               {token}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground">
-            <span className={`size-2 rounded-full ${socketStatus.dotClassName}`} aria-hidden />
+          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
+            <span
+              className={`size-2 rounded-full ${socketStatus.dotClassName} ${socketStatus.glowClassName} shadow-[0_0_12px_currentColor]`}
+              aria-hidden
+            />
             <span className="text-xs font-medium uppercase tracking-wide">{socketStatus.label}</span>
           </div>
           <select
@@ -168,7 +175,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             onChange={(event) => {
               setMethodFilter(event.target.value);
             }}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="h-9 rounded-md border border-input bg-background/70 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label="Filter requests by method"
           >
             {METHOD_OPTIONS.map((method) => (
@@ -183,35 +190,46 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             onChange={(event) => {
               setSearchFilter(event.target.value);
             }}
-            className="w-full min-w-[240px] max-w-sm"
+            className="h-9 w-full min-w-[240px] max-w-sm bg-background/70"
           />
           <Button
             variant="outline"
+            size="sm"
+            className="h-9 border-border/80 bg-background/70"
             onClick={() => {
               void loadRequests();
             }}
           >
+            <IconRefresh size={14} />
             Refresh
           </Button>
-          <Badge variant="outline">{filteredCount} requests</Badge>
+          <Badge variant="outline" className="border-border/80 bg-background/60 font-mono text-[11px]">
+            {filteredCount} requests
+          </Badge>
+          <Button asChild variant="ghost" size="sm" className="h-9">
+            <Link href={`/history/${token}`}>
+              <IconHistory size={14} />
+              History
+            </Link>
+          </Button>
         </div>
       </header>
 
       {error ? <p className="px-4 py-2 text-sm text-red-400">{error}</p> : null}
 
-      <section className="grid min-h-0 flex-1 grid-cols-[360px_minmax(0,1fr)] overflow-hidden border-t border-border">
-        <div className="flex min-h-0 flex-col border-r border-border">
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/70 bg-card/55">
           {!user && !isHistoryBannerDismissed ? (
-            <div className="flex items-start justify-between gap-3 border-b border-border bg-muted/50 px-3 py-2 text-sm">
+            <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/45 px-3 py-2 text-sm">
               <p className="text-muted-foreground">
                 Showing last 24h only.{' '}
-                <a href="/login" className="font-medium text-primary underline underline-offset-4">
+                <Link href="/login" className="font-medium text-primary underline underline-offset-4">
                   Log in
-                </a>{' '}
+                </Link>{' '}
                 for 30-day history.
               </p>
               <Button
-                size="sm"
+                size="xs"
                 variant="ghost"
                 onClick={() => {
                   setIsHistoryBannerDismissed(true);
@@ -235,9 +253,24 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             }}
           />
         </div>
-        <div className="min-h-0 overflow-y-auto">
+        <div className="min-h-0 space-y-4 overflow-y-auto">
           <RequestDetail request={selectedRequest} />
-          {compareId ? <JsonDiffViewer leftRequest={selectedRequest} rightRequest={compareRequest} /> : null}
+          {compareId ? (
+            <div className="space-y-2">
+              <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                <IconArrowsDiff size={13} />
+                Compare mode
+              </p>
+              <JsonDiffViewer leftRequest={selectedRequest} rightRequest={compareRequest} />
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border/70 bg-card/40 px-4 py-3 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-2">
+                <IconWaveSine size={14} />
+                Select <span className="font-medium text-foreground">Compare</span> on a request to open JSON diff mode.
+              </span>
+            </div>
+          )}
         </div>
       </section>
     </main>

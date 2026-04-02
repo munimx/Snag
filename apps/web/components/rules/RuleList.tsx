@@ -37,8 +37,10 @@ export function RuleList({ rules, selectedRuleId, onSelectRule }: RuleListProps)
               onSelectRule(rule.id);
             }}
             className={cn(
-              'space-y-3 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-muted/60',
-              isSelected ? 'border-primary ring-1 ring-primary/40' : 'border-border',
+              'space-y-3 rounded-lg border bg-secondary/30 p-4 text-left transition-colors hover:bg-secondary/50',
+              isSelected
+                ? 'border-primary/60 bg-primary/10 ring-1 ring-primary/35 shadow-[0_0_18px_hsl(var(--primary)/0.18)]'
+                : 'border-border/70',
             )}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">

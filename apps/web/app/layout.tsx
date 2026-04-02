@@ -3,6 +3,7 @@ import type React from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../components/auth/AuthProvider';
 import { NavBar } from '../components/ui/NavBar';
+import { Toaster } from '../components/ui/toaster';
 import { webConfig } from '../lib/config';
 import './globals.css';
 
@@ -39,9 +40,10 @@ export default function RootLayout({ children }: RootLayoutProps): React.JSX.Ele
     <html lang="en">
       <body>
         <AuthProvider>
-          <div className="min-h-screen bg-background text-foreground">
+          <div className="min-h-screen text-foreground">
             <NavBar />
-            {children}
+            <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-8 pt-4 sm:px-6">{children}</div>
+            <Toaster />
           </div>
         </AuthProvider>
       </body>

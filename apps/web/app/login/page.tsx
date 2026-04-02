@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { IconAt, IconLoader2, IconMailCheck, IconSend2 } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { requestMagicLink } from '@/lib/auth';
+import { webConfig } from '@/lib/config';
 
 type LoginState = 'idle' | 'sending' | 'sent';
 
@@ -14,8 +16,9 @@ function LoginPageContent(): React.JSX.Element {
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
   const emailFromQuery = searchParams.get('email');
+  const initialState = useMemo<LoginState>(() => (emailFromQuery ? 'sent' : 'idle'), [emailFromQuery]);
   const [email, setEmail] = useState<string>(emailFromQuery ?? '');
-  const [state, setState] = useState<LoginState>(emailFromQuery ? 'sent' : 'idle');
+  const [state, setState] = useState<LoginState>(initialState);
   const [error, setError] = useState<string | null>(null);
   const [magicLinkUrl, setMagicLinkUrl] = useState<string | null>(null);
 
@@ -39,98 +42,108 @@ function LoginPageContent(): React.JSX.Element {
     }
   };
 
-  if (state === 'sent') {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-[400px] space-y-6 rounded-lg border border-border bg-card p-8">
-          <div className="space-y-2 text-center">
-            <h1 className="text-2xl font-bold text-primary">Check your email</h1>
-            <p className="text-sm text-muted-foreground">
-              We sent a magic link to <span className="font-semibold text-foreground">{email}</span>
-            </p>
-          </div>
-
-          {magicLinkUrl && process.env.NODE_ENV === 'development' ? (
-            <div className="space-y-2 rounded-md border border-border bg-secondary p-4">
-              <p className="text-xs text-muted-foreground">Development mode direct verification link:</p>
-              <a className="break-all text-sm text-primary hover:underline" href={magicLinkUrl}>
-                {magicLinkUrl}
-              </a>
-            </div>
-          ) : null}
-
-          <Button
-            className="w-full"
-            variant="outline"
-            onClick={() => {
-              setState('idle');
-              setEmail('');
-              setMagicLinkUrl(null);
-              setError(null);
-            }}
-          >
-            Send another
-          </Button>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-[400px] space-y-6 rounded-lg border border-border bg-card p-8">
+    <main className="flex min-h-[calc(100vh-5rem)] items-center justify-center py-10">
+      <section className="w-full max-w-[460px] space-y-5 rounded-2xl border border-border/70 bg-card/65 p-6 sm:p-7">
         <div className="space-y-2 text-center">
-          <Link className="inline-block" href="/">
-            <h1 className="text-3xl font-bold tracking-tight text-primary">SNAG</h1>
-          </Link>
-          <p className="text-sm text-muted-foreground">Sign in with magic link</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary">Magic link auth</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Sign in to Snag</h1>
+          <p className="text-sm text-muted-foreground">
+            Use your email and we’ll send a one-time login link to your inbox.
+          </p>
         </div>
 
-        <div className="space-y-4">
-          <Input
-            className="w-full"
-            disabled={state === 'sending'}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setEmail(event.target.value);
-            }}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-              if (event.key === 'Enter') {
+        {state === 'sent' ? (
+          <div className="space-y-4 rounded-lg border border-primary/35 bg-primary/10 p-4">
+            <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+              <IconMailCheck size={16} />
+              Check your email
+            </p>
+            <p className="text-sm text-muted-foreground">
+              We sent a magic link to <span className="font-semibold text-foreground">{email}</span>.
+            </p>
+
+            {magicLinkUrl && webConfig.isDevelopment ? (
+              <div className="space-y-2 rounded-md border border-border/70 bg-secondary/40 p-3">
+                <p className="text-xs text-muted-foreground">Development direct verification link:</p>
+                <a className="break-all font-mono text-xs text-primary hover:underline" href={magicLinkUrl}>
+                  {magicLinkUrl}
+                </a>
+              </div>
+            ) : null}
+
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => {
+                setState('idle');
+                setEmail('');
+                setMagicLinkUrl(null);
+                setError(null);
+              }}
+            >
+              Send another
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Email
+              </label>
+              <Input
+                id="email"
+                className="h-11 bg-background/70"
+                disabled={state === 'sending'}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setEmail(event.target.value);
+                }}
+                onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (event.key === 'Enter') {
+                    void handleSubmit();
+                  }
+                }}
+                placeholder="you@example.com"
+                type="email"
+                value={email}
+              />
+            </div>
+
+            <Button
+              className="h-11 w-full justify-between bg-gradient-to-r from-primary/95 to-accent/85 text-primary-foreground"
+              disabled={email.trim() === '' || state === 'sending'}
+              onClick={() => {
                 void handleSubmit();
-              }
-            }}
-            placeholder="you@example.com"
-            type="email"
-            value={email}
-          />
+              }}
+            >
+              {state === 'sending' ? (
+                <span className="inline-flex items-center gap-2">
+                  <IconLoader2 size={15} className="animate-spin" />
+                  Sending...
+                </span>
+              ) : (
+                <>
+                  <span className="inline-flex items-center gap-2">
+                    <IconSend2 size={15} />
+                    Send magic link
+                  </span>
+                  <IconAt size={14} />
+                </>
+              )}
+            </Button>
 
-          <Button
-            className="w-full"
-            disabled={email.trim() === '' || state === 'sending'}
-            onClick={() => {
-              void handleSubmit();
-            }}
-          >
-            {state === 'sending' ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
-                Sending...
-              </span>
-            ) : (
-              'Send magic link'
-            )}
-          </Button>
+            {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
+          </div>
+        )}
 
-          {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
-
-          {from ? <p className="text-center text-xs text-muted-foreground">You need to sign in to continue</p> : null}
-        </div>
+        {from ? <p className="text-center text-xs text-muted-foreground">You need to sign in to continue.</p> : null}
 
         <div className="text-center">
-          <Link className="text-sm text-muted-foreground hover:text-primary" href="/">
-            ← Back to home
+          <Link className="text-xs uppercase tracking-[0.08em] text-muted-foreground hover:text-primary" href="/">
+            Back to home
           </Link>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
@@ -139,8 +152,8 @@ export default function LoginPage(): React.JSX.Element {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center">
-          <p className="text-muted-foreground">Loading...</p>
+        <main className="flex min-h-[calc(100vh-5rem)] items-center justify-center py-10">
+          <p className="text-sm text-muted-foreground">Loading login…</p>
         </main>
       }
     >

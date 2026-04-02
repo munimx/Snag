@@ -37,10 +37,10 @@ export function DeliveryLog({ deliveries }: DeliveryLogProps): React.JSX.Element
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="rounded-lg border border-border/70 bg-secondary/25">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-secondary/20 hover:bg-secondary/20">
             <TableHead>Attempt</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Latency</TableHead>

@@ -51,26 +51,35 @@ export function RuleCreateForm({ token, onCreated, onCancel }: RuleCreateFormPro
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+    <div className="space-y-4 rounded-lg border border-border/70 bg-secondary/25 p-4">
       <div className="grid gap-3 md:grid-cols-2">
-        <Input placeholder="Rule name" value={name} onChange={(event) => setName(event.target.value)} />
         <Input
+          className="bg-background/70"
+          placeholder="Rule name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <Input
+          className="bg-background/70"
           placeholder="Destination URL"
           value={destinationUrl}
           onChange={(event) => setDestinationUrl(event.target.value)}
         />
         <Input
+          className="bg-background/70"
           placeholder="Filter method (optional)"
           value={filterMethod}
           onChange={(event) => setFilterMethod(event.target.value)}
         />
         <Input
+          className="bg-background/70"
           placeholder="Filter body key (optional)"
           value={filterBodyKey}
           onChange={(event) => setFilterBodyKey(event.target.value)}
         />
       </div>
       <Input
+        className="bg-background/70"
         placeholder="Filter body value (optional)"
         value={filterBodyVal}
         onChange={(event) => setFilterBodyVal(event.target.value)}

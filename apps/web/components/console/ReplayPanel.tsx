@@ -2,6 +2,7 @@
 
 import type { CapturedRequest } from '@snag/shared/types';
 import { useState } from 'react';
+import { IconLoader2, IconPlayerPlayFilled, IconSend2, IconWorld } from '@tabler/icons-react';
 
 import { replayRequest } from '../../lib/api';
 import type { ReplayResponse } from '../../lib/types';
@@ -33,28 +34,46 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
   };
 
   return (
-    <section className="mt-4 border-t border-border pt-4">
-      <h3 className="text-sm font-medium">Replay</h3>
-      <div className="mt-2 flex gap-2">
+    <section className="space-y-3 rounded-md border border-border/60 bg-secondary/25 p-3">
+      <h3 className="inline-flex items-center gap-2 text-sm font-medium">
+        <IconSend2 size={14} />
+        Replay
+      </h3>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Input
           value={targetUrl}
           onChange={(event) => {
             setTargetUrl(event.target.value);
           }}
-          className="flex-1"
+          className="flex-1 font-mono text-xs"
         />
         <Button
+          className="h-9 justify-between sm:min-w-[140px]"
           onClick={() => {
             void onReplay();
           }}
           disabled={loading}
         >
-          {loading ? 'Replaying…' : 'Replay'}
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <IconLoader2 size={14} className="animate-spin" />
+              Replaying…
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-2">
+              <IconPlayerPlayFilled size={12} />
+              Replay
+            </span>
+          )}
         </Button>
       </div>
-      {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
+      <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+        <IconWorld size={13} />
+        Send to your local or staging endpoint.
+      </p>
+      {error ? <p className="text-xs text-red-400">{error}</p> : null}
       {result ? (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Replay status: {result.responseStatus ?? 'failed'} · latency: {result.latencyMs ?? '—'}ms
         </p>
       ) : null}
