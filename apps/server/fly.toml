@@ -2,7 +2,7 @@ app = "snag-server"
 primary_region = "iad"
 
 [build]
-  dockerfile = "apps/server/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [env]
   HOST = "0.0.0.0"
