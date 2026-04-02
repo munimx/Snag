@@ -3,20 +3,26 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
-import { IconAt, IconLoader2, IconMailCheck, IconSend2 } from '@tabler/icons-react';
+import { IconAt, IconCircleCheck, IconLoader2, IconMailCheck, IconSend2 } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { requestMagicLink } from '@/lib/auth';
 import { webConfig } from '@/lib/config';
 
-type LoginState = 'idle' | 'sending' | 'sent';
+type LoginState = 'idle' | 'sending' | 'sent' | 'verified';
 
 function LoginPageContent(): React.JSX.Element {
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
+  const isVerified = searchParams.get('verified') === '1';
   const emailFromQuery = searchParams.get('email');
-  const initialState = useMemo<LoginState>(() => (emailFromQuery ? 'sent' : 'idle'), [emailFromQuery]);
+  const initialState = useMemo<LoginState>(() => {
+    if (isVerified) {
+      return 'verified';
+    }
+    return emailFromQuery ? 'sent' : 'idle';
+  }, [emailFromQuery, isVerified]);
   const [email, setEmail] = useState<string>(emailFromQuery ?? '');
   const [state, setState] = useState<LoginState>(initialState);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +59,26 @@ function LoginPageContent(): React.JSX.Element {
           </p>
         </div>
 
+        {state === 'verified' ? (
+          <div className="space-y-4 rounded-lg border border-emerald-500/35 bg-emerald-500/10 p-4">
+            <p className="inline-flex items-center gap-2 text-sm font-medium text-emerald-300">
+              <IconCircleCheck size={16} />
+              Email verified
+            </p>
+            <p className="text-sm text-muted-foreground">Your sign-in is complete. You can continue to the console or send another link.</p>
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => {
+                setState('idle');
+                setError(null);
+              }}
+            >
+              Send another magic link
+            </Button>
+          </div>
+        ) : null}
+
         {state === 'sent' ? (
           <div className="space-y-4 rounded-lg border border-primary/35 bg-primary/10 p-4">
             <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
@@ -85,7 +111,7 @@ function LoginPageContent(): React.JSX.Element {
               Send another
             </Button>
           </div>
-        ) : (
+        ) : state === 'idle' || state === 'sending' ? (
           <div className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="email" className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
@@ -134,7 +160,7 @@ function LoginPageContent(): React.JSX.Element {
 
             {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
           </div>
-        )}
+        ) : null}
 
         {from ? <p className="text-center text-xs text-muted-foreground">You need to sign in to continue.</p> : null}
 

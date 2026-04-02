@@ -3,7 +3,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { IconArrowRight, IconCheck, IconCopy, IconLoader2, IconPlugConnected } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconCheck,
+  IconCopy,
+  IconLoader2,
+  IconPlugConnected,
+  IconTerminal2,
+} from '@tabler/icons-react';
 
 import { createEndpoint } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -63,11 +70,11 @@ export function EndpointCreator(): React.JSX.Element {
         <div className="space-y-2">
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-primary">
             <IconPlugConnected size={13} />
-            Endpoint bootstrap
+            Quick start
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Create a public webhook endpoint</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Spin up an endpoint in seconds</h2>
           <p className="text-sm text-muted-foreground">
-            Generate a token, send events to the capture URL, and jump straight into the live console.
+            Create a tokenized public URL, send webhooks, then jump into real-time inspection and replay.
           </p>
         </div>
 
@@ -76,7 +83,7 @@ export function EndpointCreator(): React.JSX.Element {
             <div className="rounded-lg border border-primary/35 bg-primary/10 p-4">
               <p className="mb-3 inline-flex items-center gap-2 text-xs text-primary">
                 <IconCheck size={14} />
-                Endpoint is live
+                Endpoint is live and accepting traffic
               </p>
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
@@ -87,7 +94,12 @@ export function EndpointCreator(): React.JSX.Element {
                   <code className="flex-1 rounded-md border border-border/60 bg-background/70 p-2 font-mono text-xs text-primary">
                     {endpoint.url}
                   </code>
-                  <Button variant="outline" size="sm" className="h-8" onClick={() => void handleCopy()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 focus-visible:ring-primary/70"
+                    onClick={() => void handleCopy()}
+                  >
                     <IconCopy size={14} />
                     Copy URL
                   </Button>
@@ -95,7 +107,7 @@ export function EndpointCreator(): React.JSX.Element {
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button asChild className="h-9 flex-1 justify-between">
+              <Button asChild className="h-9 flex-1 justify-between focus-visible:ring-primary/70">
                 <Link href={`/console/${endpoint.token}`}>
                   Open live console
                   <IconArrowRight size={14} />
@@ -103,7 +115,7 @@ export function EndpointCreator(): React.JSX.Element {
               </Button>
               <Button
                 variant="outline"
-                className="h-9"
+                className="h-9 focus-visible:ring-primary/70"
                 onClick={() => {
                   setEndpoint(null);
                   setState('idle');
@@ -126,23 +138,27 @@ export function EndpointCreator(): React.JSX.Element {
               {state === 'creating' ? (
                 <span className="inline-flex items-center gap-2">
                   <IconLoader2 className="animate-spin" size={15} />
-                  Creating endpoint...
+                  Provisioning endpoint...
                 </span>
               ) : (
                 <>
-                  Create endpoint
+                  Create public endpoint
                   <IconArrowRight size={14} />
                 </>
               )}
             </Button>
-            <p className="text-xs text-muted-foreground">No setup needed—your endpoint is generated server-side.</p>
+            <div className="rounded-md border border-border/60 bg-secondary/25 p-3">
+              <p className="text-xs text-muted-foreground">No setup needed—your endpoint is generated server-side.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Then run <span className="font-mono text-foreground">snag listen</span> to receive traffic in local dev.</p>
+            </div>
           </div>
         )}
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         <div className="rounded-lg border border-border/70 bg-secondary/30 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <h3 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <IconTerminal2 size={14} />
             Open existing endpoint
           </h3>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -152,10 +168,10 @@ export function EndpointCreator(): React.JSX.Element {
               onChange={(event) => {
                 setToken(event.target.value);
               }}
-              className="flex-1 font-mono text-xs"
+              className="flex-1 font-mono text-xs focus-visible:ring-primary/70"
             />
             <Button
-              className="h-9 rounded-md"
+              className="h-9 rounded-md focus-visible:ring-primary/70"
               onClick={() => {
                 if (token.trim()) {
                   router.push(`/console/${encodeURIComponent(token.trim())}`);

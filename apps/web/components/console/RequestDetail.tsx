@@ -29,7 +29,9 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
   if (!request) {
     return (
       <div className="flex h-full min-h-[360px] items-center justify-center rounded-xl border border-border/60 bg-card/55 p-4 text-sm text-muted-foreground">
-        Select a request to view details.
+        <div className="rounded-lg border border-dashed border-border/65 bg-secondary/15 px-4 py-3">
+          Select a request to view details.
+        </div>
       </div>
     );
   }
@@ -61,12 +63,12 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
       </div>
 
       <Tabs defaultValue="headers" className="mt-2">
-        <TabsList className="bg-secondary/45">
+        <TabsList className="bg-secondary/35">
           <TabsTrigger value="headers">Headers</TabsTrigger>
           <TabsTrigger value="body">Body</TabsTrigger>
           <TabsTrigger value="query">Query</TabsTrigger>
         </TabsList>
-        <TabsContent value="headers" className="rounded-md border border-border/60 bg-secondary/30 p-3">
+        <TabsContent value="headers" className="rounded-md border border-border/60 bg-secondary/20 p-3">
           <Table>
             <TableHeader>
               <TableRow>
@@ -92,12 +94,12 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
             </TableBody>
           </Table>
         </TabsContent>
-        <TabsContent value="body" className="rounded-md border border-border/60 bg-secondary/30 p-3">
+        <TabsContent value="body" className="rounded-md border border-border/60 bg-secondary/20 p-3">
           <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-background/65 p-3 font-mono text-xs">
             {request.body ?? 'No body'}
           </pre>
         </TabsContent>
-        <TabsContent value="query" className="rounded-md border border-border/60 bg-secondary/30 p-3">
+        <TabsContent value="query" className="rounded-md border border-border/60 bg-secondary/20 p-3">
           <Table>
             <TableHeader>
               <TableRow>
@@ -125,7 +127,7 @@ export function RequestDetail({ request }: RequestDetailProps): React.JSX.Elemen
         </TabsContent>
       </Tabs>
 
-      <section className="grid gap-4 rounded-md border border-border/60 bg-secondary/20 p-3 lg:grid-cols-[minmax(0,1fr)_240px]">
+      <section className="grid gap-4 rounded-md border border-border/60 bg-secondary/15 p-3 lg:grid-cols-[minmax(0,1fr)_240px]">
         <div className="space-y-2">
           <h3 className="inline-flex items-center gap-2 text-sm font-medium">
             <IconWorldWww size={14} />

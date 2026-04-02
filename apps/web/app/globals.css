@@ -2,30 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 222 55% 7%;
-    --foreground: 222 80% 95%;
-    --card: 222 44% 11%;
-    --card-foreground: 222 80% 95%;
-    --popover: 222 44% 11%;
-    --popover-foreground: 222 80% 95%;
-    --primary: 190 100% 60%;
-    --primary-foreground: 222 80% 12%;
-    --secondary: 223 26% 25%;
-    --secondary-foreground: 222 72% 93%;
-    --muted: 223 25% 18%;
-    --muted-foreground: 222 24% 70%;
-    --accent: 236 68% 66%;
-    --accent-foreground: 222 80% 10%;
-    --destructive: 353 80% 62%;
-    --destructive-foreground: 222 100% 97%;
-    --border: 224 24% 29%;
-    --input: 224 22% 20%;
-    --ring: 190 100% 60%;
-    --radius: 0.75rem;
+    --background: 228 38% 7%;
+    --foreground: 210 45% 96%;
+    --card: 226 31% 10%;
+    --card-foreground: 210 45% 96%;
+    --popover: 226 31% 10%;
+    --popover-foreground: 210 45% 96%;
+    --primary: 192 98% 66%;
+    --primary-foreground: 224 70% 10%;
+    --secondary: 226 23% 16%;
+    --secondary-foreground: 210 40% 92%;
+    --muted: 225 22% 14%;
+    --muted-foreground: 218 20% 68%;
+    --accent: 258 86% 70%;
+    --accent-foreground: 225 72% 12%;
+    --destructive: 355 83% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 24% 24%;
+    --input: 224 22% 18%;
+    --ring: 192 98% 66%;
+    --radius: 0.9rem;
+    --success: 147 64% 52%;
   }
 }
 
@@ -41,12 +42,27 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Sora', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     background-image:
-      radial-gradient(circle at 18% 10%, hsl(var(--primary) / 0.14) 0%, transparent 40%),
-      radial-gradient(circle at 82% 0%, hsl(var(--accent) / 0.1) 0%, transparent 42%),
-      linear-gradient(170deg, hsl(224 56% 8%) 0%, hsl(222 55% 7%) 42%, hsl(220 62% 6%) 100%);
+      radial-gradient(circle at 14% -8%, hsl(var(--primary) / 0.22) 0%, transparent 38%),
+      radial-gradient(circle at 87% 0%, hsl(var(--accent) / 0.16) 0%, transparent 40%),
+      radial-gradient(circle at 50% 118%, hsl(206 70% 24% / 0.24) 0%, transparent 48%),
+      linear-gradient(166deg, hsl(229 45% 8%) 0%, hsl(226 40% 7%) 44%, hsl(222 44% 6%) 100%);
     background-attachment: fixed;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.024) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.024) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: radial-gradient(circle at top, black 24%, transparent 85%);
+    opacity: 0.45;
+    z-index: -1;
   }
 
   code,

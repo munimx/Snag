@@ -52,7 +52,7 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Sora', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
         mono: ['IBM Plex Mono', 'monospace'],
       },
     },

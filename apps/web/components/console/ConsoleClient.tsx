@@ -5,7 +5,14 @@ import type { ServerMessage } from '@snag/shared/ws-messages';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { IconArrowsDiff, IconHistory, IconRefresh, IconTimeline, IconWaveSine } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconArrowsDiff,
+  IconHistory,
+  IconRefresh,
+  IconTimeline,
+  IconWaveSine,
+} from '@tabler/icons-react';
 
 import { useEndpointSocket } from '../../hooks/useEndpointSocket';
 import { getRequestDetail, listRequests } from '../../lib/api';
@@ -151,31 +158,63 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
 
   const filteredCount = useMemo(() => requests.length, [requests.length]);
   const socketStatus = getSocketStatusMeta(socketState);
+  const stats = useMemo(() => {
+    const errored = requests.filter((request) => (request.status ?? 0) >= 400).length;
+    const replayable = requests.filter((request) => request.bodyType !== null || request.body).length;
+    const avgLatencySource = requests.filter((request) => request.latencyMs !== null);
+    const avgLatency =
+      avgLatencySource.length === 0
+        ? null
+        : Math.round(
+            avgLatencySource.reduce((total, request) => total + (request.latencyMs ?? 0), 0) / avgLatencySource.length,
+          );
+    return { errored, replayable, avgLatency };
+  }, [requests]);
 
   return (
-    <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-4">
-      <header className="rounded-xl border border-border/70 bg-card/60 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/40 px-3 py-2">
-            <IconTimeline size={14} className="text-primary" />
-            <span className="text-xs text-muted-foreground">Token</span>
+    <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-3">
+      <header className="rounded-xl border border-border/70 bg-card/65 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/30 px-3 py-2">
+            <IconTimeline size={14} className="text-primary/90" />
+            <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Token</span>
             <Badge variant="secondary" className="font-mono text-xs">
               {token}
             </Badge>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-md border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-muted-foreground">
             <span
               className={`size-2 rounded-full ${socketStatus.dotClassName} ${socketStatus.glowClassName} shadow-[0_0_12px_currentColor]`}
               aria-hidden
             />
             <span className="text-xs font-medium uppercase tracking-wide">{socketStatus.label}</span>
           </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Captured</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{filteredCount}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Errors (4xx/5xx)</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.errored}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Avg latency</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Replay-ready</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.replayable}</p>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/70 bg-secondary/20 p-2">
           <select
             value={methodFilter}
             onChange={(event) => {
               setMethodFilter(event.target.value);
             }}
-            className="h-9 rounded-md border border-input bg-background/70 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="h-9 rounded-md border border-input bg-background/85 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label="Filter requests by method"
           >
             {METHOD_OPTIONS.map((method) => (
@@ -190,12 +229,12 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             onChange={(event) => {
               setSearchFilter(event.target.value);
             }}
-            className="h-9 w-full min-w-[240px] max-w-sm bg-background/70"
+            className="h-9 w-full min-w-[240px] max-w-sm bg-background/85"
           />
           <Button
             variant="outline"
             size="sm"
-            className="h-9 border-border/80 bg-background/70"
+            className="h-9 border-border/80 bg-background/80"
             onClick={() => {
               void loadRequests();
             }}
@@ -203,7 +242,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             <IconRefresh size={14} />
             Refresh
           </Button>
-          <Badge variant="outline" className="border-border/80 bg-background/60 font-mono text-[11px]">
+          <Badge variant="outline" className="border-border/80 bg-background/70 font-mono text-[11px]">
             {filteredCount} requests
           </Badge>
           <Button asChild variant="ghost" size="sm" className="h-9">
@@ -215,9 +254,14 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
         </div>
       </header>
 
-      {error ? <p className="px-4 py-2 text-sm text-red-400">{error}</p> : null}
+      {error ? (
+        <p className="inline-flex items-center gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <IconAlertTriangle size={14} />
+          {error}
+        </p>
+      ) : null}
 
-      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[380px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border/70 bg-card/55">
           {!user && !isHistoryBannerDismissed ? (
             <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/45 px-3 py-2 text-sm">
@@ -253,7 +297,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             }}
           />
         </div>
-        <div className="min-h-0 space-y-4 overflow-y-auto">
+         <div className="min-h-0 space-y-3 overflow-y-auto">
           <RequestDetail request={selectedRequest} />
           {compareId ? (
             <div className="space-y-2">

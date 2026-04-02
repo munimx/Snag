@@ -79,9 +79,9 @@ export function RequestList({
 }: RequestListProps): React.JSX.Element {
   if (isLoading) {
     return (
-      <div className="space-y-3 p-3">
+      <div className="space-y-2 p-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="h-20 animate-pulse rounded-lg border border-border/50 bg-secondary/40" />
+          <div key={index} className="h-20 animate-pulse rounded-lg border border-border/55 bg-secondary/30" />
         ))}
       </div>
     );
@@ -89,8 +89,10 @@ export function RequestList({
 
   if (requests.length === 0) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
-        No requests yet. Send a webhook to your endpoint to populate the feed.
+      <div className="p-4">
+        <div className="rounded-lg border border-dashed border-border/70 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
+          No requests yet. Send a webhook to your endpoint to populate the feed.
+        </div>
       </div>
     );
   }
@@ -106,10 +108,10 @@ export function RequestList({
               onClick={() => {
                 onSelect(request.id);
               }}
-              className={`w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+              className={`w-full rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 isSelected
                   ? 'border-primary/60 bg-primary/12 shadow-[0_0_18px_hsl(var(--primary)/0.2)]'
-                  : 'border-border/45 bg-secondary/20 hover:border-border/70 hover:bg-secondary/45'
+                  : 'border-border/45 bg-secondary/15 hover:border-border/70 hover:bg-secondary/35'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -121,14 +123,14 @@ export function RequestList({
                 <span>{formatRelativeTime(request.receivedAt)}</span>
               </div>
             </button>
-            <div className="mt-2 px-1">
+            <div className="mt-1 px-1">
               <Button
                 onClick={() => {
                   onCompare(request.id);
                 }}
                 variant={isComparing ? 'secondary' : 'outline'}
                 size="xs"
-                className="h-6 rounded-md border-border/70 bg-background/40 font-mono text-[10px] uppercase tracking-[0.08em]"
+                className="h-6 rounded-md border-border/70 bg-background/50 font-mono text-[10px] uppercase tracking-[0.08em]"
               >
                 <IconArrowsDiff size={12} />
                 {isComparing ? 'Comparing' : 'Compare'}

@@ -33,11 +33,15 @@ function formatDateTime(value: string): string {
 
 export function DeliveryLog({ deliveries }: DeliveryLogProps): React.JSX.Element {
   if (deliveries.length === 0) {
-    return <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">No delivery attempts yet.</p>;
+    return (
+      <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+        No delivery attempts yet. Select a rule with traffic to inspect delivery results.
+      </p>
+    );
   }
 
   return (
-    <div className="rounded-lg border border-border/70 bg-secondary/25">
+    <div className="overflow-hidden rounded-xl border border-border/70 bg-secondary/25">
       <Table>
         <TableHeader>
           <TableRow className="bg-secondary/20 hover:bg-secondary/20">
@@ -53,11 +57,15 @@ export function DeliveryLog({ deliveries }: DeliveryLogProps): React.JSX.Element
             <TableRow key={delivery.id}>
               <TableCell className="font-medium">#{delivery.attempt}</TableCell>
               <TableCell>
-                <Badge variant={getStatusVariant(delivery.status)}>{delivery.status ?? 'N/A'}</Badge>
+                <Badge variant={getStatusVariant(delivery.status)} className="font-mono text-xs">
+                  {delivery.status ?? 'N/A'}
+                </Badge>
               </TableCell>
-              <TableCell>{delivery.latencyMs ?? 0}ms</TableCell>
+              <TableCell className="font-mono text-xs">{delivery.latencyMs ?? 0}ms</TableCell>
               <TableCell>{formatDateTime(delivery.createdAt)}</TableCell>
-              <TableCell className="max-w-[240px] truncate text-destructive">{delivery.error ?? '—'}</TableCell>
+              <TableCell className="max-w-[280px] truncate text-sm">
+                {delivery.error ? <span className="text-destructive">{delivery.error}</span> : <span className="text-muted-foreground">—</span>}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

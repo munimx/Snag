@@ -6,6 +6,7 @@ import { IconLoader2, IconPlayerPlayFilled, IconSend2, IconWorld } from '@tabler
 
 import { replayRequest } from '../../lib/api';
 import type { ReplayResponse } from '../../lib/types';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
@@ -34,11 +35,16 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
   };
 
   return (
-    <section className="space-y-3 rounded-md border border-border/60 bg-secondary/25 p-3">
-      <h3 className="inline-flex items-center gap-2 text-sm font-medium">
-        <IconSend2 size={14} />
-        Replay
-      </h3>
+    <section className="space-y-3 rounded-md border border-border/60 bg-secondary/20 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="inline-flex items-center gap-2 text-sm font-medium">
+          <IconSend2 size={14} />
+          Replay
+        </h3>
+        <Badge variant="outline" className="border-border/80 bg-background/65 font-mono text-[10px] uppercase tracking-[0.08em]">
+          request {request.id.slice(0, 8)}
+        </Badge>
+      </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Input
           value={targetUrl}
@@ -71,9 +77,11 @@ export function ReplayPanel({ request }: ReplayPanelProps): React.JSX.Element {
         <IconWorld size={13} />
         Send to your local or staging endpoint.
       </p>
-      {error ? <p className="text-xs text-red-400">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md border border-red-500/35 bg-red-500/10 px-2 py-1 text-xs text-red-300">{error}</p>
+      ) : null}
       {result ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="rounded-md border border-border/60 bg-background/50 px-2 py-1 text-xs text-muted-foreground">
           Replay status: {result.responseStatus ?? 'failed'} · latency: {result.latencyMs ?? '—'}ms
         </p>
       ) : null}

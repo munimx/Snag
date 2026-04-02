@@ -50,7 +50,7 @@ export function JsonDiffViewer({ leftRequest, rightRequest }: JsonDiffViewerProp
   const rightJson = parseJsonBody(rightRequest.body);
   if (leftJson === null || rightJson === null) {
     return (
-      <div className="rounded-lg border border-border/60 bg-card/45 px-4 py-3 text-sm text-amber-300">
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
         JSON diff is only available when both request bodies are valid JSON.
       </div>
     );
@@ -62,11 +62,15 @@ export function JsonDiffViewer({ leftRequest, rightRequest }: JsonDiffViewerProp
         <IconArrowsDiff size={14} />
         JSON Diff
       </h3>
-      {diffEntries.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">No differences found.</p> : null}
+      {diffEntries.length === 0 ? (
+        <p className="mt-2 rounded-md border border-dashed border-border/65 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+          No differences found.
+        </p>
+      ) : null}
       {diffEntries.map((entry) => (
         <div
           key={`${entry.path}-${entry.status}`}
-          className="mt-2 rounded-md border border-border/60 bg-secondary/25 p-3"
+          className="mt-2 rounded-md border border-border/60 bg-secondary/20 p-3"
         >
           <div className="mb-2 flex items-center gap-2">
             <strong className="font-mono text-xs">{entry.path}</strong>

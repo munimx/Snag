@@ -40,9 +40,11 @@ export default function RootLayout({ children }: RootLayoutProps): React.JSX.Ele
     <html lang="en">
       <body>
         <AuthProvider>
-          <div className="min-h-screen text-foreground">
+          <div className="relative min-h-screen text-foreground">
+            <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[260px] bg-gradient-to-b from-primary/12 via-transparent to-transparent" />
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-[280px] bg-gradient-to-t from-accent/8 via-transparent to-transparent" />
             <NavBar />
-            <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-8 pt-4 sm:px-6">{children}</div>
+            <div className="relative z-10 mx-auto w-full max-w-[1280px] px-4 pb-8 pt-5 sm:px-6">{children}</div>
             <Toaster />
           </div>
         </AuthProvider>

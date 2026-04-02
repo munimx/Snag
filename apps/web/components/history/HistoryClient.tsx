@@ -4,6 +4,7 @@ import type { CapturedRequest } from '@snag/shared/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { IconAlertTriangle, IconDatabase, IconGauge, IconHistory } from '@tabler/icons-react';
 
 import { listRequests } from '../../lib/api';
 import { useAuth } from '../auth/AuthProvider';
@@ -121,12 +122,28 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
     const cutoff = Date.now() - option.hours * 60 * 60 * 1000;
     return requests.filter((request) => new Date(request.receivedAt).getTime() >= cutoff);
   }, [rangeFilter, requests]);
+  const stats = useMemo(() => {
+    const errored = filteredRequests.filter((request) => (request.status ?? 0) >= 400).length;
+    const successful = filteredRequests.filter((request) => {
+      const status = request.status ?? 0;
+      return status >= 200 && status < 400;
+    }).length;
+    const latencySource = filteredRequests.filter((request) => request.latencyMs !== null);
+    const avgLatency =
+      latencySource.length === 0
+        ? null
+        : Math.round(latencySource.reduce((total, request) => total + (request.latencyMs ?? 0), 0) / latencySource.length);
+    return { errored, successful, avgLatency };
+  }, [filteredRequests]);
 
   return (
     <main className="min-h-[calc(100vh-5rem)] space-y-4 text-foreground">
       <header className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold sm:text-2xl">Request History</h1>
+          <h1 className="inline-flex items-center gap-2 text-xl font-semibold sm:text-2xl">
+            <IconHistory size={20} className="text-primary" />
+            Request History
+          </h1>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="font-mono text-xs">
               {token}
@@ -134,6 +151,33 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
             <Button asChild size="sm" variant="outline" className="h-8 border-border/70 bg-background/70">
               <Link href={`/console/${token}`}>Back to console</Link>
             </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <IconDatabase size={12} />
+              Requests
+            </p>
+            <p className="mt-1 font-mono text-lg font-semibold">{filteredRequests.length}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Successful</p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.successful}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <IconAlertTriangle size={12} />
+              Errors
+            </p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.errored}</p>
+          </div>
+          <div className="rounded-lg border border-border/70 bg-background/55 px-3 py-2">
+            <p className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <IconGauge size={12} />
+              Avg latency
+            </p>
+            <p className="mt-1 font-mono text-lg font-semibold">{stats.avgLatency === null ? '—' : `${stats.avgLatency}ms`}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -218,21 +262,26 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
-                  Loading requests…
+                  <span className="rounded-md border border-border/60 bg-secondary/25 px-2 py-1">Loading requests…</span>
                 </TableCell>
               </TableRow>
             ) : null}
             {!isLoading && error ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-red-400">
-                  {error}
+                  <span className="inline-flex items-center gap-2 rounded-md border border-red-500/35 bg-red-500/10 px-2 py-1 text-red-300">
+                    <IconAlertTriangle size={14} />
+                    {error}
+                  </span>
                 </TableCell>
               </TableRow>
             ) : null}
             {!isLoading && !error && filteredRequests.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
-                  No requests found for the selected filters.
+                  <span className="rounded-md border border-dashed border-border/65 bg-secondary/20 px-2 py-1">
+                    No requests found for the selected filters.
+                  </span>
                 </TableCell>
               </TableRow>
             ) : null}
@@ -251,7 +300,7 @@ export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element 
                         router.push(`/console/${encodeURIComponent(token)}?selected=${encodeURIComponent(request.id)}`);
                       }
                     }}
-                    className="cursor-pointer"
+                     className="cursor-pointer transition-colors hover:bg-secondary/20"
                   >
                     <TableCell>
                       <Badge className={getMethodBadgeClass(request.method)}>{request.method}</Badge>
