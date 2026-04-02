@@ -1,0 +1,271 @@
+'use client';
+
+import type { CapturedRequest } from '@snag/shared/types';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { listRequests } from '../../lib/api';
+import { useAuth } from '../auth/AuthProvider';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+
+interface HistoryClientProps {
+  token: string;
+}
+
+const METHOD_OPTIONS = ['ALL', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
+const RANGE_OPTIONS = [
+  { key: '24h', label: '24h', hours: 24 },
+  { key: '7d', label: '7d', hours: 24 * 7 },
+  { key: '30d', label: '30d', hours: 24 * 30 },
+] as const;
+
+type RangeKey = (typeof RANGE_OPTIONS)[number]['key'];
+
+function getMethodBadgeClass(method: string): string {
+  if (method === 'GET') {
+    return 'border-blue-500/40 bg-blue-500/15 text-blue-300';
+  }
+  if (method === 'POST') {
+    return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
+  }
+  if (method === 'PUT') {
+    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
+  }
+  if (method === 'PATCH') {
+    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
+  }
+  if (method === 'DELETE') {
+    return 'border-red-500/40 bg-red-500/15 text-red-300';
+  }
+  return 'border-border bg-muted text-muted-foreground';
+}
+
+function getStatusBadgeClass(status: number | null): string {
+  if (status === null) {
+    return 'border-border bg-muted text-muted-foreground';
+  }
+  if (status >= 500) {
+    return 'border-red-500/40 bg-red-500/15 text-red-300';
+  }
+  if (status >= 400) {
+    return 'border-orange-500/40 bg-orange-500/15 text-orange-300';
+  }
+  if (status >= 300) {
+    return 'border-amber-500/40 bg-amber-500/15 text-amber-300';
+  }
+  return 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300';
+}
+
+function getBodyTypeLabel(bodyType: string | null): string {
+  if (!bodyType) {
+    return '—';
+  }
+  return bodyType;
+}
+
+function formatReceivedAt(value: string): string {
+  return new Date(value).toLocaleString();
+}
+
+function formatLatency(latencyMs: number | null): string {
+  if (latencyMs === null) {
+    return '—';
+  }
+  return `${latencyMs} ms`;
+}
+
+export function HistoryClient({ token }: HistoryClientProps): React.JSX.Element {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [requests, setRequests] = useState<CapturedRequest[]>([]);
+  const [methodFilter, setMethodFilter] = useState<string>('ALL');
+  const [searchFilter, setSearchFilter] = useState<string>('');
+  const [rangeFilter, setRangeFilter] = useState<RangeKey>('24h');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isHistoryBannerDismissed, setIsHistoryBannerDismissed] = useState<boolean>(false);
+
+  const loadRequests = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await listRequests(token, {
+        method: methodFilter === 'ALL' ? undefined : methodFilter,
+        search: searchFilter.trim() === '' ? undefined : searchFilter.trim(),
+        limit: 100,
+      });
+      setRequests(response.data);
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Failed to load requests';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [methodFilter, searchFilter, token]);
+
+  useEffect(() => {
+    void loadRequests();
+  }, [loadRequests]);
+
+  const filteredRequests = useMemo(() => {
+    const option = RANGE_OPTIONS.find((range) => range.key === rangeFilter);
+    if (!option) {
+      return requests;
+    }
+
+    const cutoff = Date.now() - option.hours * 60 * 60 * 1000;
+    return requests.filter((request) => new Date(request.receivedAt).getTime() >= cutoff);
+  }, [rangeFilter, requests]);
+
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="flex w-full flex-col gap-4 px-4 py-6">
+        <header className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-xl font-semibold">Request History</h1>
+            <Badge variant="secondary" className="font-mono">
+              {token}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={methodFilter}
+              onChange={(event) => {
+                setMethodFilter(event.target.value);
+              }}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label="Filter requests by method"
+            >
+              {METHOD_OPTIONS.map((method) => (
+                <option key={method} value={method}>
+                  {method}
+                </option>
+              ))}
+            </select>
+            <Input
+              placeholder="Search path/body..."
+              value={searchFilter}
+              onChange={(event) => {
+                setSearchFilter(event.target.value);
+              }}
+              className="min-w-[220px] flex-1"
+            />
+            <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-1">
+              {RANGE_OPTIONS.map((range) => (
+                <Button
+                  key={range.key}
+                  variant={rangeFilter === range.key ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => {
+                    setRangeFilter(range.key);
+                  }}
+                  className="h-8"
+                >
+                  {range.label}
+                </Button>
+              ))}
+            </div>
+            <Badge variant="outline">{filteredRequests.length} requests</Badge>
+          </div>
+        </header>
+
+        {!user && !isHistoryBannerDismissed ? (
+          <div className="flex items-start justify-between gap-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+            <p className="text-muted-foreground">
+              Showing last 24h only.{' '}
+              <Link href="/login" className="font-medium text-primary underline underline-offset-4">
+                Log in
+              </Link>{' '}
+              for 30-day history.
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsHistoryBannerDismissed(true);
+              }}
+              aria-label="Dismiss history notice"
+            >
+              Dismiss
+            </Button>
+          </div>
+        ) : null}
+
+        <section className="rounded-lg border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Method</TableHead>
+                <TableHead>Path</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Body type</TableHead>
+                <TableHead>Received at</TableHead>
+                <TableHead>Latency</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-muted-foreground">
+                    Loading requests…
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {!isLoading && error ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-red-400">
+                    {error}
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {!isLoading && !error && filteredRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-muted-foreground">
+                    No requests found for the selected filters.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {!isLoading && !error
+                ? filteredRequests.map((request) => (
+                    <TableRow
+                      key={request.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        router.push(`/console/${encodeURIComponent(token)}?selected=${encodeURIComponent(request.id)}`);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          router.push(
+                            `/console/${encodeURIComponent(token)}?selected=${encodeURIComponent(request.id)}`,
+                          );
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <TableCell>
+                        <Badge className={getMethodBadgeClass(request.method)}>{request.method}</Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{request.path}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusBadgeClass(request.status)}>{request.status ?? '—'}</Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{getBodyTypeLabel(request.bodyType)}</TableCell>
+                      <TableCell>{formatReceivedAt(request.receivedAt)}</TableCell>
+                      <TableCell>{formatLatency(request.latencyMs)}</TableCell>
+                    </TableRow>
+                  ))
+                : null}
+            </TableBody>
+          </Table>
+        </section>
+      </div>
+    </main>
+  );
+}
