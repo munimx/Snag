@@ -7,7 +7,9 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
-RUN pnpm --filter @snag/server build
+RUN pnpm --filter @snag/db generate \
+  && pnpm --filter @snag/db build \
+  && pnpm --filter @snag/server build
 
 FROM node:20-alpine AS runtime
 WORKDIR /app
