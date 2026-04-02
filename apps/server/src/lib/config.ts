@@ -5,6 +5,7 @@ export const configSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   PORT: z.coerce.number().int().positive().default(8080),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  CORS_ORIGINS: z.string().default(''),
   BODY_LIMIT_BYTES: z.coerce.number().int().positive().default(1024 * 1024),
   RATE_LIMIT_MAX_PER_MINUTE: z.coerce.number().int().positive().default(100),
   WAIT_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
