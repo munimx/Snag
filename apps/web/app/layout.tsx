@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type React from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../components/auth/AuthProvider';
+import { NavBar } from '../components/ui/NavBar';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -36,7 +37,12 @@ export default function RootLayout({ children }: RootLayoutProps): React.JSX.Ele
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-background text-foreground">
+            <NavBar />
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
