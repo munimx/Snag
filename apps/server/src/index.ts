@@ -1,11 +1,12 @@
 import fastify, { type FastifyInstance } from 'fastify';
 import fastifyCookie from '@fastify/cookie';
+import fastifyCors from '@fastify/cors';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyWebsocket from '@fastify/websocket';
 import { fileURLToPath } from 'node:url';
 import type { FastifyError } from 'fastify';
 
-import { loadConfig, type AppConfig } from './lib/config.js';
+import { configSchema, loadConfig, type AppConfig } from './lib/config.js';
 import { db } from './lib/db.js';
 import apiRoute from './routes/api-route.js';
 import authRoute from './routes/auth-route.js';
@@ -14,8 +15,13 @@ import healthRoute from './routes/health-route.js';
 import wsRoute from './routes/ws-route.js';
 import { createDeliveryWorker } from './workers/delivery-worker.js';
 
-export async function buildApp(configOverride?: AppConfig): Promise<FastifyInstance> {
-  const resolvedConfig = configOverride ?? loadConfig();
+export async function buildApp(configOverride?: Partial<AppConfig>): Promise<FastifyInstance> {
+  const resolvedConfig = configOverride ? configSchema.parse(configOverride) : loadConfig();
+  const configuredOrigins = resolvedConfig.CORS_ORIGINS.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+  const originAllowlist = new Set(configuredOrigins);
+  const allowAnyOrigin = originAllowlist.size === 0 || originAllowlist.has('*');
 
   const app = fastify({
     logger: true,
@@ -46,6 +52,26 @@ export async function buildApp(configOverride?: AppConfig): Promise<FastifyInsta
         message: `Too many requests. Retry in ${context.after}.`,
         statusCode: 429,
       };
+    },
+  });
+
+  await app.register(fastifyCors, {
+    strictPreflight: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400,
+    origin: (origin, callback) => {
+      if (allowAnyOrigin) {
+        callback(null, true);
+        return;
+      }
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, originAllowlist.has(origin));
     },
   });
 

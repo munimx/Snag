@@ -32,6 +32,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -60,6 +61,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -106,6 +108,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -166,6 +169,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -212,6 +216,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -294,6 +299,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -356,6 +362,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -436,6 +443,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 64,
       RATE_LIMIT_MAX_PER_MINUTE: 100,
       WAIT_TIMEOUT_MS: 50,
@@ -468,6 +476,7 @@ describe('server core', () => {
       HOST: '127.0.0.1',
       PORT: 8080,
       NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
       BODY_LIMIT_BYTES: 1024 * 1024,
       RATE_LIMIT_MAX_PER_MINUTE: 2,
       WAIT_TIMEOUT_MS: 50,
@@ -487,6 +496,42 @@ describe('server core', () => {
     expect(second.statusCode).toBe(200);
     expect(third.statusCode).toBe(429);
     expect(third.json<{ error: string }>().error).toBe('Rate limit exceeded');
+
+    await app.close();
+  });
+
+  it('responds to auth preflight with CORS headers for configured origin', async () => {
+    const { buildApp } = await import('./index.js');
+    const app = await buildApp({
+      DATABASE_URL: 'postgres://localhost:5432/snag',
+      HOST: '127.0.0.1',
+      PORT: 8080,
+      NODE_ENV: 'test',
+      CORS_ORIGINS: 'https://snag-web-five.vercel.app',
+      BODY_LIMIT_BYTES: 1024 * 1024,
+      RATE_LIMIT_MAX_PER_MINUTE: 100,
+      WAIT_TIMEOUT_MS: 50,
+      REDIS_URL: 'redis://127.0.0.1:6379',
+      DELIVERY_QUEUE_NAME: 'delivery-forwarding',
+      ENABLE_DELIVERY_WORKER: false,
+      MAGIC_LINK_TTL_MINUTES: 15,
+      SESSION_TTL_HOURS: 24 * 30,
+      APP_URL: 'http://localhost:3000',
+    });
+
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/auth/me',
+      headers: {
+        origin: 'https://snag-web-five.vercel.app',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'content-type',
+      },
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-origin']).toBe('https://snag-web-five.vercel.app');
+    expect(response.headers['access-control-allow-credentials']).toBe('true');
 
     await app.close();
   });
