@@ -1,77 +1,115 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { createEndpoint } from '../../lib/api';
+import { createEndpoint } from '@/lib/api';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function EndpointCreator(): React.JSX.Element {
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const router = useRouter();
+  const [state, setState] = useState<'idle' | 'creating' | 'created'>('idle');
+  const [endpoint, setEndpoint] = useState<{ token: string; url: string } | null>(null);
+  const [token, setToken] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ token: string; url: string } | null>(null);
 
   const handleCreate = async (): Promise<void> => {
-    setIsCreating(true);
+    setState('creating');
     setError(null);
 
     try {
-      const endpoint = await createEndpoint();
-      setResult(endpoint);
+      const result = await createEndpoint();
+      setEndpoint(result);
+      setState('created');
     } catch (caughtError: unknown) {
-      const message = caughtError instanceof Error ? caughtError.message : 'Failed to create endpoint';
-      setError(message);
-    } finally {
-      setIsCreating(false);
+      setError(caughtError instanceof Error ? caughtError.message : 'Failed to create endpoint');
+      setState('idle');
+    }
+  };
+
+  const handleCopy = async (): Promise<void> => {
+    if (endpoint?.url) {
+      await navigator.clipboard.writeText(endpoint.url);
     }
   };
 
   return (
-    <section
-      style={{
-        background: '#111a33',
-        border: '1px solid #2e3a5e',
-        borderRadius: 12,
-        padding: 24,
-        maxWidth: 780,
-      }}
-    >
-      <h2 style={{ marginTop: 0 }}>Create an endpoint</h2>
-      <p style={{ color: '#9fb0d1' }}>
-        Generate a token, start sending webhooks to the capture URL, then open the live console.
-      </p>
-      <button
-        onClick={() => {
-          void handleCreate();
-        }}
-        disabled={isCreating}
-        style={{
-          background: '#3b82f6',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          padding: '10px 16px',
-          cursor: 'pointer',
-        }}
-      >
-        {isCreating ? 'Creating…' : 'Create endpoint'}
-      </button>
+    <div className="w-full max-w-3xl rounded-lg border border-border bg-secondary/40 p-6">
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">Create an endpoint</h2>
+        <p className="text-muted-foreground">
+          Generate a token, start sending webhooks to the capture URL, then open the live console.
+        </p>
 
-      {error ? <p style={{ color: '#ff8a8a' }}>{error}</p> : null}
+        {state === 'created' && endpoint ? (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-border bg-secondary p-6">
+              <p className="mb-2 text-sm text-muted-foreground">Your endpoint is ready:</p>
+              <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                <code className="flex-1 rounded bg-background p-3 font-mono text-sm text-primary">{endpoint.url}</code>
+                <Button variant="outline" size="sm" onClick={() => void handleCopy()}>
+                  Copy
+                </Button>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild className="flex-1">
+                <Link href={`/console/${endpoint.token}`}>Open Console</Link>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEndpoint(null);
+                  setState('idle');
+                }}
+              >
+                Create Another
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <Button
+              size="lg"
+              onClick={() => {
+                void handleCreate();
+              }}
+              disabled={state === 'creating'}
+              className="w-full max-w-xs"
+            >
+              {state === 'creating' ? 'Creating...' : 'Create Endpoint'}
+            </Button>
+          </div>
+        )}
 
-      {result ? (
-        <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
-          <div>
-            <strong>Token:</strong> <code>{result.token}</code>
-          </div>
-          <div>
-            <strong>Capture URL:</strong> <code>{result.url}</code>
-          </div>
-          <div>
-            <a href={`/console/${result.token}`} style={{ color: '#7fb3ff' }}>
-              Open console →
-            </a>
-          </div>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </div>
+
+      <div className="mt-8 rounded-lg border border-border p-6">
+        <h3 className="mb-4 text-lg font-semibold text-foreground">Open Existing Endpoint</h3>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            placeholder="Enter endpoint token"
+            value={token}
+            onChange={(event) => {
+              setToken(event.target.value);
+            }}
+            className="flex-1 max-w-md font-mono"
+          />
+          <Button
+            onClick={() => {
+              if (token) {
+                router.push(`/console/${token}`);
+              }
+            }}
+          >
+            Open
+          </Button>
         </div>
-      ) : null}
-    </section>
+      </div>
+    </div>
   );
 }
