@@ -106,18 +106,22 @@ class SnagClient:
         body_key: str | None = None,
         body_value: str | None = None,
     ) -> Flow:
-        config: dict[str, object] = {"destinationUrl": destination_url}
+        payload: dict[str, object] = {
+            "name": name,
+            "enabled": True,
+            "destinationUrl": destination_url,
+        }
         if method is not None:
-            config["method"] = method
+            payload["filterMethod"] = method
         if body_key is not None:
-            config["bodyKey"] = body_key
+            payload["filterBodyKey"] = body_key
         if body_value is not None:
-            config["bodyValue"] = body_value
+            payload["filterBodyVal"] = body_value
 
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.post(
-                f"{self._server_url}/api/endpoints/{token}/flows",
-                json={"name": name, "isEnabled": True, "config": config},
+                f"{self._server_url}/api/endpoints/{token}/rules",
+                json=payload,
                 headers=self._headers(),
             )
             response.raise_for_status()

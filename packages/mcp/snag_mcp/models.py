@@ -61,8 +61,14 @@ class Flow(BaseModel):
 
     id: str | None = None
     endpointId: str | None = None
-    name: str
-    isEnabled: bool = True
+    name: str | None = None
+    enabled: bool | None = None
+    isEnabled: bool | None = None
+    destinationUrl: str | None = None
+    filterMethod: str | None = None
+    filterBodyKey: str | None = None
+    filterBodyVal: str | None = None
+    retries: int | None = None
     config: dict[str, object] = Field(default_factory=dict)
     createdAt: str | None = None
     updatedAt: str | None = None
