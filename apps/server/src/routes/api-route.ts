@@ -385,7 +385,7 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
           capturedRequestId: row.id,
           targetUrl: parsedBody.data.targetUrl,
           responseStatus,
-          responseHeaders: responseHeaders ?? undefined,
+          responseHeaders: responseHeaders ?? null,
           responseBody,
           latencyMs,
         },

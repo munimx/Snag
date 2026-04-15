@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 export const configSchema = z.object({
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().min(1).optional(),
+  FIREBASE_PROJECT_ID: z.string().min(1).optional(),
+  FIREBASE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),
+  FIREBASE_SERVICE_ACCOUNT_PATH: z.string().min(1).optional(),
   HOST: z.string().default('0.0.0.0'),
   PORT: z.coerce.number().int().positive().default(8080),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
