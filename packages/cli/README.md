@@ -140,3 +140,9 @@ Fields:
 - `HTTP 401` on authenticated operations: run `snag login` first.
 - `HTTP 404` for inspect/replay: confirm the request ID exists and is accessible.
 - Connection errors: verify `--server` points to a live Snag server.
+
+## npm README behavior
+
+This `README.md` is in the package root (`packages/cli`), which is required for npm package pages.
+
+README changes appear on npm only after publishing a new package version.
