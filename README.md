@@ -56,8 +56,8 @@ External webhook sender
 | --- | --- | --- |
 | Web console | Vercel | `apps/web` |
 | API/WS server | Fly.io | `apps/server/fly.toml` + `.github/workflows/deploy.yml` |
-| npm packages | npm registry | `.github/workflows/publish.yml` (`snag-cli`, `@snag/sdk`) |
-| Python package | PyPI | `.github/workflows/publish.yml` (`snag-mcp`) |
+| npm packages | npm registry | `.github/workflows/publish.yml` (`cli-v*`, `sdk-v*`) |
+| Python package | PyPI | `.github/workflows/publish.yml` (`mcp-v*`) |
 
 ## Repository layout
 

@@ -77,4 +77,4 @@ docker compose up --build
 
 - PR/main checks: `.github/workflows/ci.yml`
 - Fly deploy on `main`: `.github/workflows/deploy.yml`
-- npm/PyPI publish on version tags: `.github/workflows/publish.yml`
+- npm/PyPI publish on package tags: `.github/workflows/publish.yml` (`cli-v*`, `sdk-v*`, `mcp-v*`)

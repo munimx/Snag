@@ -3,10 +3,13 @@ name: publish
 on:
   push:
     tags:
-      - 'v*'
+      - 'cli-v*'
+      - 'sdk-v*'
+      - 'mcp-v*'
 
 jobs:
-  publish-node:
+  publish-cli:
+    if: startsWith(github.ref_name, 'cli-v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,17 +24,34 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile=false
       - run: pnpm --filter snag-cli build
-      - run: pnpm --filter @snag/sdk build
       - name: Publish CLI package
         run: pnpm --filter snag-cli publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-sdk:
+    if: startsWith(github.ref_name, 'sdk-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm --filter @snag/sdk build
       - name: Publish SDK package
         run: pnpm --filter @snag/sdk publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-mcp:
+    if: startsWith(github.ref_name, 'mcp-v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
