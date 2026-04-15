@@ -1,13 +1,14 @@
 # Self-hosting Snag
 
-This guide runs Snag server + web with PostgreSQL and Redis in Docker Compose.
+This guide runs Snag server + web with Firebase Firestore and Redis in Docker Compose.
 
 ## 1) Environment
 
 Create a `.env` file next to your compose file:
 
 ```env
-DATABASE_URL=postgresql://snag:snag@postgres:5432/snag
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_SERVICE_ACCOUNT_PATH=/run/secrets/firebase-service-account.json
 REDIS_URL=redis://redis:6379
 HOST=0.0.0.0
 PORT=8080
@@ -27,17 +28,6 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
 
 ```yaml
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: snag
-      POSTGRES_USER: snag
-      POSTGRES_PASSWORD: snag
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   redis:
     image: redis:7-alpine
     ports:
@@ -50,7 +40,6 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
       - redis
     ports:
       - '8080:8080'
@@ -69,8 +58,13 @@ services:
     ports:
       - '3000:3000'
 
-volumes:
-  postgres_data:
+```
+
+If you prefer local emulation, start the Firestore emulator and set:
+
+```env
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8085
+FIREBASE_PROJECT_ID=demo-snag
 ```
 
 ## 3) Start

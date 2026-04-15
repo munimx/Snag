@@ -17,8 +17,6 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm --filter @snag/db generate
-      - run: pnpm --filter @snag/db build
       - run: pnpm turbo typecheck lint test
 
   mcp-checks:

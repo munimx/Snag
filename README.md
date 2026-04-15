@@ -9,7 +9,7 @@ Snag is an open-source webhook inspector and forwarder with a real-time console,
 - Node.js 20+
 - pnpm 9+
 - Python 3.11+ and `uv` (for `packages/mcp`)
-- Postgres + Redis for full server functionality
+- Firebase project with Cloud Firestore + Redis for full server functionality
 
 ### Install
 
@@ -35,10 +35,34 @@ Server defaults to `http://localhost:8080`; web defaults to `http://localhost:30
 - `packages/mcp` — Python MCP server (`snag-mcp`)
 - `packages/db` + `packages/shared` — internal schema/types
 
+## Firebase setup
+
+1. Create/select a Firebase project and initialize Firestore config:
+
+```bash
+firebase projects:create snag-your-id
+firebase use snag-your-id
+firebase init firestore
+```
+
+2. Provide Admin SDK credentials to the server:
+
+```bash
+export FIREBASE_PROJECT_ID=snag-your-id
+export FIREBASE_SERVICE_ACCOUNT_PATH=/absolute/path/to/service-account.json
+# or FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+```
+
+3. Deploy Firestore config:
+
+```bash
+firebase deploy --only firestore
+```
+
 ## Deployment overview
 
 - **Web**: deploy via Vercel GitHub integration
-- **Server**: deploy to Fly.io using `.github/workflows/deploy.yml`
+- **Server**: deploy to Fly.io using `.github/workflows/deploy.yml` (configure Firebase Admin env vars)
 - **Packages**: publish on `v*` tags via `.github/workflows/publish.yml`
 
 ## Security defaults included
