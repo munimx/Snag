@@ -70,6 +70,14 @@ const captureRoute: FastifyPluginAsync = async (fastify) => {
       const serialized = toCapturedRequest(createdRequest);
 
       wsHub.broadcast(token, { type: 'request_captured', request: serialized });
+      const tunnelForwardCount = wsHub.forwardToCli(token, {
+        type: 'tunnel_forward',
+        requestId: serialized.id,
+        method: serialized.method,
+        path: serialized.path,
+        headers: serialized.headers,
+        body: serialized.body ?? '',
+      });
       wsHub.notifyCaptured(token, serialized.id);
       try {
         await fastify.deliveryWorker.enqueueCapture({
@@ -81,7 +89,7 @@ const captureRoute: FastifyPluginAsync = async (fastify) => {
       }
 
       request.log.info(
-        { endpointId: endpoint.id, token, requestId: createdRequest.id, method: request.method },
+        { endpointId: endpoint.id, token, requestId: createdRequest.id, method: request.method, tunnelForwardCount },
         'request captured',
       );
 
