@@ -4,7 +4,7 @@ import { Command } from 'commander';
 
 import { getOrCreateToken, loadConfig, saveConfig } from '../lib/config.js';
 import { writeOutput } from '../lib/output.js';
-import { TunnelClient } from '../lib/tunnel-client.js';
+import { ensureLocalPortReachable, TunnelClient } from '../lib/tunnel-client.js';
 import { ListenScreen } from '../ui/listen-screen.js';
 import type { CapturedRequest } from '@snag/shared/types';
 
@@ -55,6 +55,8 @@ export function createListenCommand(): Command {
       const serverUrl = resolveServerUrl(options.server);
       const wsUrl = toWsUrl(serverUrl);
       const publicUrl = `${serverUrl.replace(/\/$/, '')}/h/${token}`;
+
+      await ensureLocalPortReachable(localPort);
 
       saveConfig({
         ...loadConfig(),
