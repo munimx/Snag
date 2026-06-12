@@ -127,7 +127,7 @@ export default function LandingPage(): React.JSX.Element {
           <div>
             <h3 className="text-sm font-medium text-foreground">Self-host</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Run on your own infrastructure. Postgres + Redis. Deploy anywhere.
+              Run on your own infrastructure. Firestore + Redis. Deploy anywhere.
             </p>
           </div>
         </div>
