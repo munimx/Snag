@@ -4,15 +4,15 @@ Snag is a multi-surface webhook platform: capture inbound HTTP traffic in real t
 
 ## Product surfaces
 
-| Surface | Package | Runtime | What it does |
-| --- | --- | --- | --- |
-| Web console | `apps/web` | Next.js 15 + React 19 | Live feed, history, replay UI, rule management, auth UX |
-| Capture/API server | `apps/server` | Fastify + WebSocket | Capture endpoint, REST API, WS hub, replay execution, auth/session APIs |
-| CLI tunnel | `packages/cli` (`snag-cli`) | Node.js | Terminal listener + WebSocket tunnel + inspect/replay/login commands |
-| MCP server | `packages/mcp` (`snag-mcp`) | Python 3.11+ | Tool bridge for agent clients (Copilot, Claude Code, Cursor, etc.) |
-| TypeScript SDK | `packages/sdk` (`@snag/sdk`) | Node + browser-friendly API | Programmatic endpoint management, request streaming, replay helpers |
-| Shared contracts | `packages/shared` | TypeScript | Shared request types and WS message unions |
-| DB package (internal) | `packages/db` | Prisma package | Internal schema/client artifacts kept in-repo |
+| Surface               | Package                      | Runtime                     | What it does                                                            |
+| --------------------- | ---------------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| Web console           | `apps/web`                   | Next.js 15 + React 19       | Live feed, history, replay UI, rule management, auth UX                 |
+| Capture/API server    | `apps/server`                | Fastify + WebSocket         | Capture endpoint, REST API, WS hub, replay execution, auth/session APIs |
+| CLI tunnel            | `packages/cli` (`snag-cli`)  | Node.js                     | Terminal listener + WebSocket tunnel + inspect/replay/login commands    |
+| MCP server            | `packages/mcp` (`snag-mcp`)  | Python 3.11+                | Tool bridge for agent clients (Copilot, Claude Code, Cursor, etc.)      |
+| TypeScript SDK        | `packages/sdk` (`@snag/sdk`) | Node + browser-friendly API | Programmatic endpoint management, request streaming, replay helpers     |
+| Shared contracts      | `packages/shared`            | TypeScript                  | Shared request types and WS message unions                              |
+| DB package (internal) | `packages/db`                | Prisma package              | Internal schema/client artifacts kept in-repo                           |
 
 ## Component architecture
 
@@ -22,7 +22,7 @@ External webhook sender
   -> persisted request (Firestore)
   -> broadcast event (WebSocket hub)
       -> apps/web live console
-      -> snag-cli listener
+      -> snag-cli listener -> localhost:<port>
       -> @snag/sdk subscriptions
   -> replay/rules APIs
       -> web UI / CLI / MCP / SDK clients
@@ -50,14 +50,23 @@ External webhook sender
 - **Queue/cache:** Redis (`bullmq` + `ioredis`) for delivery worker flows
 - **Security defaults:** request rate limiting, 1 MB body limit, protected replay headers
 
+## Run locally with Docker
+
+```bash
+docker compose up --build
+```
+
+Then open `http://localhost:3000`. The Compose stack includes the web console,
+Fastify API/WS server, Redis, and a local Firestore emulator.
+
 ## Deployment model
 
-| Target | Platform | Source |
-| --- | --- | --- |
-| Web console | Vercel | `apps/web` |
-| API/WS server | Fly.io | `apps/server/fly.toml` + `.github/workflows/deploy.yml` |
-| npm packages | npm registry | `.github/workflows/publish.yml` (`cli-v*`, `sdk-v*`) |
-| Python package | PyPI | `.github/workflows/publish.yml` (`mcp-v*`) |
+| Target         | Platform     | Source                                                  |
+| -------------- | ------------ | ------------------------------------------------------- |
+| Web console    | Vercel       | `apps/web`                                              |
+| API/WS server  | Fly.io       | `apps/server/fly.toml` + `.github/workflows/deploy.yml` |
+| npm packages   | npm registry | `.github/workflows/publish.yml` (`cli-v*`, `sdk-v*`)    |
+| Python package | PyPI         | `.github/workflows/publish.yml` (`mcp-v*`)              |
 
 ## Repository layout
 
@@ -74,13 +83,19 @@ packages/
 docs/
   self-hosting.md
   mcp-quickstart.md
+  cli-guide.md
+  sdk-guide.md
+  recipes.md
 ```
 
 ## Documentation map
 
 - Self-hosting and env setup: [`docs/self-hosting.md`](docs/self-hosting.md)
+- CLI workflows and tunnel examples: [`docs/cli-guide.md`](docs/cli-guide.md)
+- TypeScript SDK usage: [`docs/sdk-guide.md`](docs/sdk-guide.md)
+- Provider webhook recipes: [`docs/recipes.md`](docs/recipes.md)
 - MCP setup notes: [`docs/mcp-quickstart.md`](docs/mcp-quickstart.md)
-- CLI command guide: [`packages/cli/README.md`](packages/cli/README.md)
+- npm package CLI README: [`packages/cli/README.md`](packages/cli/README.md)
 
 ## Monorepo scripts
 
