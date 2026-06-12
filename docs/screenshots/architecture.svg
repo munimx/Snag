@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" role="img" aria-label="Snag architecture diagram from webhook providers through the capture server to web, CLI, SDK, MCP, storage, replay, and forwarding">
+  <defs>
+    <linearGradient id="arch-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111d"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1440" height="720" fill="url(#arch-bg)"/>
+  <rect x="48" y="48" width="1344" height="624" rx="30" fill="#0f172a" stroke="#334155"/>
+  <text x="92" y="112" fill="#f8fafc" font-size="32" font-weight="900" font-family="ui-sans-serif, system-ui">How Snag moves webhook traffic</text>
+  <text x="92" y="146" fill="#94a3b8" font-size="17" font-family="ui-sans-serif, system-ui">A single capture URL fans out to inspection, local tunnels, programmatic clients, replay, and forwarding rules.</text>
+
+  <g font-family="ui-sans-serif, system-ui">
+    <rect x="92" y="238" width="214" height="126" rx="22" fill="#111827" stroke="#475569"/>
+    <text x="124" y="282" fill="#f8fafc" font-size="20" font-weight="900">Webhook providers</text>
+    <text x="124" y="316" fill="#94a3b8" font-size="14">Stripe, GitHub, Clerk,</text>
+    <text x="124" y="338" fill="#94a3b8" font-size="14">Supabase, custom apps</text>
+
+    <line x1="306" y1="301" x2="430" y2="301" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <rect x="430" y="214" width="258" height="174" rx="24" fill="#10251f" stroke="#14b8a6"/>
+    <text x="466" y="258" fill="#ccfbf1" font-size="21" font-weight="900">Capture server</text>
+    <text x="466" y="292" fill="#d1fae5" font-size="14" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">/h/:token</text>
+    <text x="466" y="324" fill="#99f6e4" font-size="14">Normalize headers, query,</text>
+    <text x="466" y="346" fill="#99f6e4" font-size="14">body, method, and path</text>
+
+    <line x1="688" y1="258" x2="810" y2="208" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+    <line x1="688" y1="301" x2="810" y2="301" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+    <line x1="688" y1="344" x2="810" y2="394" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <rect x="810" y="146" width="226" height="112" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="842" y="188" fill="#f8fafc" font-size="18" font-weight="900">Firestore</text>
+    <text x="842" y="218" fill="#94a3b8" font-size="14">Durable request history</text>
+
+    <rect x="810" y="275" width="226" height="112" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="842" y="317" fill="#f8fafc" font-size="18" font-weight="900">WebSocket hub</text>
+    <text x="842" y="347" fill="#94a3b8" font-size="14">Live browser, CLI, SDK</text>
+
+    <rect x="810" y="404" width="226" height="112" rx="20" fill="#111827" stroke="#334155"/>
+    <text x="842" y="446" fill="#f8fafc" font-size="18" font-weight="900">Replay and rules</text>
+    <text x="842" y="476" fill="#94a3b8" font-size="14">Manual replay, retries, logs</text>
+
+    <line x1="1036" y1="331" x2="1148" y2="240" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+    <line x1="1036" y1="331" x2="1148" y2="331" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+    <line x1="1036" y1="331" x2="1148" y2="422" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <rect x="1148" y="178" width="200" height="92" rx="18" fill="#172554" stroke="#2563eb"/>
+    <text x="1178" y="218" fill="#bfdbfe" font-size="18" font-weight="900">Web console</text>
+    <text x="1178" y="244" fill="#dbeafe" font-size="13">Inspect, replay, filter</text>
+
+    <rect x="1148" y="294" width="200" height="92" rx="18" fill="#3b2412" stroke="#f59e0b"/>
+    <text x="1178" y="334" fill="#fde68a" font-size="18" font-weight="900">CLI tunnel</text>
+    <text x="1178" y="360" fill="#ffedd5" font-size="13">Forward to localhost</text>
+
+    <rect x="1148" y="410" width="200" height="92" rx="18" fill="#312e81" stroke="#818cf8"/>
+    <text x="1178" y="450" fill="#ddd6fe" font-size="18" font-weight="900">SDK and MCP</text>
+    <text x="1178" y="476" fill="#e0e7ff" font-size="13">Script and agent workflows</text>
+
+    <line x1="923" y1="516" x2="923" y2="568" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="752" y="568" width="342" height="58" rx="18" fill="#0b1120" stroke="#334155"/>
+    <text x="786" y="604" fill="#cbd5e1" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">Redis + BullMQ for delivery jobs</text>
+  </g>
+</svg>

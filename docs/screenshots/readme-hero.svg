@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="840" viewBox="0 0 1600 840" role="img" aria-label="Snag product overview showing a webhook capture console, CLI tunnel, and developer integrations">
+  <defs>
+    <linearGradient id="hero-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="48%" stop-color="#101826"/>
+      <stop offset="100%" stop-color="#09111a"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162235"/>
+      <stop offset="100%" stop-color="#0d1522"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="52%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M 38 0 L 0 0 0 38" fill="none" stroke="#223149" stroke-width="1" opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="840" fill="url(#hero-bg)"/>
+  <rect width="1600" height="840" fill="url(#grid)" opacity="0.45"/>
+  <rect x="0" y="0" width="1600" height="8" fill="url(#accent)"/>
+
+  <g transform="translate(96 86)">
+    <rect x="0" y="0" width="1408" height="668" rx="34" fill="#0f172a" stroke="#28364d" stroke-width="1.4" filter="url(#shadow)"/>
+    <rect x="1" y="1" width="1406" height="666" rx="33" fill="url(#panel)" opacity="0.92"/>
+
+    <g transform="translate(52 52)">
+      <rect x="0" y="0" width="72" height="72" rx="18" fill="#111827" stroke="#334155"/>
+      <path d="M24 28h24M24 44h17" stroke="#2dd4bf" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="51" cy="46" r="6" fill="#f59e0b"/>
+
+      <text x="100" y="28" fill="#f8fafc" font-size="30" font-weight="800" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">Snag</text>
+      <text x="100" y="58" fill="#94a3b8" font-size="18" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">Webhook inspection, replay, forwarding, tunnels, SDK, and MCP tools.</text>
+    </g>
+
+    <g transform="translate(52 162)">
+      <rect x="0" y="0" width="820" height="418" rx="22" fill="#0b1120" stroke="#334155"/>
+      <rect x="0" y="0" width="820" height="58" rx="22" fill="#111827"/>
+      <circle cx="30" cy="29" r="7" fill="#ef4444"/>
+      <circle cx="54" cy="29" r="7" fill="#f59e0b"/>
+      <circle cx="78" cy="29" r="7" fill="#22c55e"/>
+      <rect x="120" y="17" width="280" height="24" rx="12" fill="#0f172a" stroke="#263548"/>
+      <text x="140" y="34" fill="#93c5fd" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">/console/stripe-dev</text>
+
+      <g transform="translate(28 88)">
+        <rect x="0" y="0" width="174" height="72" rx="14" fill="#121c2d" stroke="#263548"/>
+        <text x="18" y="27" fill="#94a3b8" font-size="12" font-weight="700" font-family="ui-sans-serif, system-ui">CAPTURED</text>
+        <text x="18" y="56" fill="#f8fafc" font-size="30" font-weight="800" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">128</text>
+        <rect x="194" y="0" width="174" height="72" rx="14" fill="#121c2d" stroke="#263548"/>
+        <text x="212" y="27" fill="#94a3b8" font-size="12" font-weight="700" font-family="ui-sans-serif, system-ui">ERRORS</text>
+        <text x="212" y="56" fill="#f87171" font-size="30" font-weight="800" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">3</text>
+        <rect x="388" y="0" width="174" height="72" rx="14" fill="#121c2d" stroke="#263548"/>
+        <text x="406" y="27" fill="#94a3b8" font-size="12" font-weight="700" font-family="ui-sans-serif, system-ui">LATENCY</text>
+        <text x="406" y="56" fill="#f8fafc" font-size="30" font-weight="800" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">92ms</text>
+        <rect x="582" y="0" width="182" height="72" rx="14" fill="#10251f" stroke="#2dd4bf" opacity="0.94"/>
+        <circle cx="608" cy="36" r="6" fill="#2dd4bf"/>
+        <text x="624" y="42" fill="#ccfbf1" font-size="18" font-weight="800" font-family="ui-sans-serif, system-ui">Live socket</text>
+      </g>
+
+      <g transform="translate(28 188)">
+        <rect x="0" y="0" width="282" height="176" rx="16" fill="#0f172a" stroke="#263548"/>
+        <text x="20" y="32" fill="#cbd5e1" font-size="15" font-weight="700" font-family="ui-sans-serif, system-ui">Recent requests</text>
+        <g transform="translate(18 52)">
+          <rect x="0" y="0" width="246" height="36" rx="10" fill="#132238" stroke="#2563eb"/>
+          <rect x="12" y="10" width="45" height="18" rx="7" fill="#134e4a"/>
+          <text x="22" y="24" fill="#99f6e4" font-size="10" font-weight="800" font-family="ui-sans-serif, system-ui">POST</text>
+          <text x="70" y="24" fill="#e2e8f0" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">/h/stripe-dev</text>
+          <rect x="0" y="48" width="246" height="36" rx="10" fill="#111827" stroke="#263548"/>
+          <rect x="12" y="58" width="45" height="18" rx="7" fill="#3b2412"/>
+          <text x="23" y="72" fill="#fed7aa" font-size="10" font-weight="800" font-family="ui-sans-serif, system-ui">POST</text>
+          <text x="70" y="72" fill="#cbd5e1" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">/h/github-dev</text>
+          <rect x="0" y="96" width="246" height="36" rx="10" fill="#111827" stroke="#263548"/>
+          <rect x="12" y="106" width="45" height="18" rx="7" fill="#1e3a8a"/>
+          <text x="25" y="120" fill="#bfdbfe" font-size="10" font-weight="800" font-family="ui-sans-serif, system-ui">GET</text>
+          <text x="70" y="120" fill="#cbd5e1" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">/h/clerk-dev</text>
+        </g>
+
+        <rect x="316" y="0" width="448" height="176" rx="16" fill="#0f172a" stroke="#263548"/>
+        <text x="338" y="32" fill="#cbd5e1" font-size="15" font-weight="700" font-family="ui-sans-serif, system-ui">Request detail</text>
+        <rect x="338" y="52" width="76" height="26" rx="9" fill="#134e4a"/>
+        <text x="356" y="70" fill="#99f6e4" font-size="12" font-weight="800" font-family="ui-sans-serif, system-ui">POST</text>
+        <text x="430" y="70" fill="#f8fafc" font-size="14" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">checkout.session.completed</text>
+        <rect x="338" y="96" width="384" height="1" fill="#263548"/>
+        <text x="338" y="124" fill="#60a5fa" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">stripe-signature</text>
+        <text x="480" y="124" fill="#cbd5e1" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">t=1781211900,v1=...</text>
+        <text x="338" y="152" fill="#60a5fa" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">content-type</text>
+        <text x="480" y="152" fill="#cbd5e1" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">application/json</text>
+      </g>
+    </g>
+
+    <g transform="translate(918 162)">
+      <rect x="0" y="0" width="438" height="184" rx="22" fill="#0b1120" stroke="#334155"/>
+      <text x="28" y="38" fill="#f8fafc" font-size="19" font-weight="800" font-family="ui-sans-serif, system-ui">CLI tunnel</text>
+      <text x="28" y="70" fill="#94a3b8" font-size="14" font-family="ui-sans-serif, system-ui">Forward real webhook traffic to localhost.</text>
+      <rect x="28" y="94" width="382" height="58" rx="12" fill="#030712" stroke="#263548"/>
+      <text x="46" y="129" fill="#e2e8f0" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace">$ snag listen 4242 --token stripe-dev</text>
+
+      <rect x="0" y="216" width="438" height="184" rx="22" fill="#0b1120" stroke="#334155"/>
+      <text x="28" y="254" fill="#f8fafc" font-size="19" font-weight="800" font-family="ui-sans-serif, system-ui">Agent tools</text>
+      <text x="28" y="286" fill="#94a3b8" font-size="14" font-family="ui-sans-serif, system-ui">MCP server gives AI coding agents real webhook context.</text>
+      <g transform="translate(28 314)">
+        <rect x="0" y="0" width="112" height="32" rx="10" fill="#172554" stroke="#2563eb"/>
+        <text x="15" y="21" fill="#bfdbfe" font-size="12" font-weight="800" font-family="ui-sans-serif, system-ui">create_endpoint</text>
+        <rect x="124" y="0" width="112" height="32" rx="10" fill="#134e4a" stroke="#14b8a6"/>
+        <text x="146" y="21" fill="#ccfbf1" font-size="12" font-weight="800" font-family="ui-sans-serif, system-ui">wait_request</text>
+        <rect x="248" y="0" width="104" height="32" rx="10" fill="#3b2412" stroke="#f59e0b"/>
+        <text x="276" y="21" fill="#fde68a" font-size="12" font-weight="800" font-family="ui-sans-serif, system-ui">replay</text>
+      </g>
+    </g>
+  </g>
+</svg>
