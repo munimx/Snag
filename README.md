@@ -1,7 +1,7 @@
 # Snag
 
 <p align="center">
-  <img src="docs/screenshots/readme-hero.svg" alt="Snag product overview" width="100%" />
+  <img src="docs/screenshots/landing-live.png" alt="Snag live landing page" width="100%" />
 </p>
 
 <p align="center">
@@ -23,13 +23,62 @@ or let AI coding agents inspect webhook traffic through MCP.
 
 ## Screenshots
 
-| Web console                                                                                          | CLI tunnel                                                                                             |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <img src="docs/screenshots/web-console.svg" alt="Snag web console request inspector" width="100%" /> | <img src="docs/screenshots/cli-terminal.svg" alt="Snag CLI tunnel and replay commands" width="100%" /> |
+These are real screenshots from the live deployment, captured on June 12, 2026.
+The console and history views are backed by the public Fly.io API endpoint
+`https://snag-server.fly.dev/h/readme-live-demo`.
 
-| MCP tools                                                                                         | Architecture                                                                                        |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| <img src="docs/screenshots/mcp-terminal.svg" alt="Snag MCP JSON-RPC tool session" width="100%" /> | <img src="docs/screenshots/architecture.svg" alt="Snag system architecture diagram" width="100%" /> |
+<p align="center">
+  <img src="docs/screenshots/web-console-live.png" alt="Live Snag console showing captured requests for readme-live-demo" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/history-live.png" alt="Live Snag request history showing persisted webhook captures" width="100%" />
+</p>
+
+## Live Deployment Smoke Test
+
+The hosted stack is wired to real endpoints:
+
+| Surface | URL |
+| ------- | --- |
+| Web console | `https://snag-web-five.vercel.app` |
+| API health | `https://snag-server.fly.dev/health` |
+| Capture URL | `https://snag-server.fly.dev/h/:token` |
+| WebSocket hub | `wss://snag-server.fly.dev/ws` |
+
+Verify the live API:
+
+```bash
+curl https://snag-server.fly.dev/health
+```
+
+Send a real webhook to the README demo endpoint:
+
+```bash
+curl -X POST 'https://snag-server.fly.dev/h/readme-live-demo?source=readme&provider=stripe' \
+  -H 'content-type: application/json' \
+  -H 'x-snag-demo: readme' \
+  --data '{
+    "id": "evt_readme_demo",
+    "type": "checkout.session.completed",
+    "data": {
+      "object": {
+        "id": "cs_readme_demo",
+        "amount_total": 4900,
+        "currency": "usd"
+      }
+    }
+  }'
+```
+
+Inspect the captured requests:
+
+```bash
+curl 'https://snag-server.fly.dev/api/endpoints/readme-live-demo/requests?limit=5'
+```
+
+Open the live console at
+`https://snag-web-five.vercel.app/console/readme-live-demo`.
 
 ## Why Developers Use Snag
 
