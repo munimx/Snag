@@ -10,7 +10,7 @@ import { createReplayCommand } from './commands/replay-command.js';
 async function main(): Promise<void> {
   const program = new Command();
 
-  program.name('snag').description('Snag CLI').version('0.0.1');
+  program.name('snag').description('Snag CLI').version('0.0.2');
 
   program.addCommand(createListenCommand());
   program.addCommand(createInspectCommand());
