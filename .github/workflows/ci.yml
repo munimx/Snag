@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile
       - run: pnpm turbo typecheck lint test
 
   mcp-checks:
@@ -24,10 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Run mcp lint, typecheck, and tests
         working-directory: packages/mcp
         run: |
-          uv sync
+          uv sync --frozen
           uv run ruff check .
           uv run mypy snag_mcp/
           uv run pytest
