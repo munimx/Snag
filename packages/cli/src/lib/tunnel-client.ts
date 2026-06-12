@@ -1,6 +1,6 @@
 import type { ClientMessage, ServerMessage } from '@snag/shared/ws-messages';
-import { createServer, request as httpRequest, type IncomingHttpHeaders } from 'node:http';
-import type { AddressInfo } from 'node:net';
+import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
+import { createConnection } from 'node:net';
 import WebSocket from 'ws';
 
 interface LocalTarget {
@@ -88,7 +88,7 @@ export class TunnelClient {
           port: this.localTarget.port,
           method: message.method,
           path: message.path,
-          headers: message.headers,
+          headers: createForwardHeaders(message.headers),
         },
         (res) => {
           const chunks: Buffer[] = [];
@@ -141,18 +141,42 @@ function normalizeResponseHeaders(headers: IncomingHttpHeaders): Record<string, 
 
 export async function ensureLocalPortReachable(port: number): Promise<void> {
   await new Promise<void>((resolve, reject) => {
-    const server = createServer();
-    server.once('error', (error) => {
-      reject(error);
+    const socket = createConnection({ host: '127.0.0.1', port });
+
+    const timeout = setTimeout(() => {
+      socket.destroy();
+      reject(new Error(`Timed out connecting to localhost:${port}`));
+    }, 1_000);
+
+    socket.once('connect', () => {
+      clearTimeout(timeout);
+      socket.end();
+      resolve();
     });
-    server.listen(port, '127.0.0.1', () => {
-      const address = server.address() as AddressInfo | null;
-      if (!address) {
-        server.close();
-        reject(new Error('Unable to open local port'));
-        return;
-      }
-      server.close(() => resolve());
+
+    socket.once('error', () => {
+      clearTimeout(timeout);
+      reject(new Error(`No service is listening on localhost:${port}`));
     });
   });
+}
+
+function createForwardHeaders(headers: Record<string, string>): Record<string, string> {
+  const forwarded: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    const normalizedKey = key.toLowerCase();
+    if (
+      normalizedKey === 'host' ||
+      normalizedKey === 'connection' ||
+      normalizedKey === 'content-length' ||
+      normalizedKey === 'transfer-encoding'
+    ) {
+      continue;
+    }
+
+    forwarded[key] = value;
+  }
+
+  return forwarded;
 }

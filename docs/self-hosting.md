@@ -1,80 +1,65 @@
-# Self-hosting Snag
+# Self-Hosting Snag
 
-This guide runs Snag server + web with Firebase Firestore and Redis in Docker Compose.
+This guide runs Snag server + web with Firebase Firestore and Redis. For local
+development, the included Docker Compose stack starts a Firestore emulator so
+you can use the product without creating a Firebase project first.
 
-## 1) Environment
-
-Create a `.env` file next to your compose file:
-
-```env
-FIREBASE_PROJECT_ID=your-firebase-project-id
-FIREBASE_SERVICE_ACCOUNT_PATH=/run/secrets/firebase-service-account.json
-REDIS_URL=redis://redis:6379
-HOST=0.0.0.0
-PORT=8080
-BODY_LIMIT_BYTES=1048576
-RATE_LIMIT_MAX_PER_MINUTE=100
-WAIT_TIMEOUT_MS=30000
-DELIVERY_QUEUE_NAME=delivery-forwarding
-ENABLE_DELIVERY_WORKER=true
-MAGIC_LINK_TTL_MINUTES=15
-SESSION_TTL_HOURS=720
-APP_URL=http://localhost:3000
-NEXT_PUBLIC_SERVER_URL=http://localhost:8080
-NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
-```
-
-## 2) Docker Compose
-
-```yaml
-services:
-  redis:
-    image: redis:7-alpine
-    ports:
-      - '6379:6379'
-
-  server:
-    build:
-      context: .
-      dockerfile: apps/server/Dockerfile
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    ports:
-      - '8080:8080'
-
-  web:
-    image: node:20-alpine
-    working_dir: /workspace
-    command: sh -lc "corepack enable && pnpm install --frozen-lockfile=false && pnpm --filter @snag/web dev"
-    volumes:
-      - .:/workspace
-    environment:
-      NEXT_PUBLIC_SERVER_URL: http://localhost:8080
-      NEXT_PUBLIC_WS_URL: ws://localhost:8080/ws
-    depends_on:
-      - server
-    ports:
-      - '3000:3000'
-
-```
-
-If you prefer local emulation, start the Firestore emulator and set:
-
-```env
-FIRESTORE_EMULATOR_HOST=127.0.0.1:8085
-FIREBASE_PROJECT_ID=demo-snag
-```
-
-## 3) Start
+## Quick Start
 
 ```bash
 docker compose up --build
 ```
 
-## 4) CI/CD notes
+Open `http://localhost:3000`, create an endpoint, and send a request to
+`http://localhost:8080/h/<token>`.
+
+## Environment
+
+Docker Compose has working local defaults, so `.env` is optional. Copy
+[.env.example](../.env.example) to `.env` only when you want to override ports,
+limits, or Firebase/Redis settings.
+
+For pnpm-based local development, use the package examples instead:
+
+```bash
+cp apps/server/.env.example apps/server/.env
+cp apps/web/.env.example apps/web/.env.local
+```
+
+Then start the Firestore emulator in another terminal:
+
+```bash
+firebase emulators:start --only firestore
+```
+
+The Next.js app reads `apps/web/.env.local` automatically. The Fastify server
+does not load `.env` files on its own, so export the server env before starting
+it:
+
+```bash
+set -a
+source apps/server/.env
+set +a
+pnpm --filter @snag/server dev
+```
+
+`ENABLE_DELIVERY_WORKER=false` is the recommended local default when you only
+need capture, history, replay, CLI, SDK, and MCP flows. Set it to `true` and run
+Redis when testing forwarding-rule background delivery.
+
+## Production Firebase
+
+For production, remove `FIRESTORE_EMULATOR_HOST` and set one of:
+
+- `FIREBASE_SERVICE_ACCOUNT_JSON`
+- `FIREBASE_SERVICE_ACCOUNT_PATH`
+- Google application-default credentials in the runtime environment
+
+Set `FIREBASE_PROJECT_ID` to your Firebase project id.
+
+## CI/CD Notes
 
 - PR/main checks: `.github/workflows/ci.yml`
 - Fly deploy on `main`: `.github/workflows/deploy.yml`
-- npm/PyPI publish on package tags: `.github/workflows/publish.yml` (`cli-v*`, `sdk-v*`, `mcp-v*`)
+- npm/PyPI publish on package tags: `.github/workflows/publish.yml`
+  (`cli-v*`, `sdk-v*`, `mcp-v*`)

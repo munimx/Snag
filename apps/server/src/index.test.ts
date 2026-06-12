@@ -56,6 +56,8 @@ describe('server core', () => {
 
   it('captures request and lists request history', async () => {
     const { buildApp } = await import('./index.js');
+    const { wsHub } = await import('./ws/hub.js');
+    const forwardSpy = vi.spyOn(wsHub, 'forwardToCli');
     const app = await buildApp({
       DATABASE_URL: 'postgres://localhost:5432/snag',
       HOST: '127.0.0.1',
@@ -83,6 +85,17 @@ describe('server core', () => {
     expect(captureResponse.statusCode).toBe(200);
     const capturePayload = captureResponse.json<{ ok: boolean; requestId: string }>();
     expect(capturePayload.ok).toBe(true);
+    expect(forwardSpy).toHaveBeenCalledWith(
+      'token-123',
+      expect.objectContaining({
+        type: 'tunnel_forward',
+        requestId: capturePayload.requestId,
+        method: 'POST',
+        path: '/h/token-123',
+        headers: expect.objectContaining({ 'content-type': 'application/json' }),
+        body: '{"hello":"world"}',
+      }),
+    );
 
     const listResponse = await app.inject({
       method: 'GET',

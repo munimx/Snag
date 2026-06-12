@@ -1,0 +1,69 @@
+services:
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command:
+      - gcloud
+      - beta
+      - emulators
+      - firestore
+      - start
+      - --host-port=0.0.0.0:8085
+      - --project=${FIREBASE_PROJECT_ID:-demo-snag}
+      - --quiet
+    ports:
+      - "8085:8085"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    environment:
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-snag}
+      FIRESTORE_EMULATOR_HOST: ${FIRESTORE_EMULATOR_HOST:-firestore:8085}
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-8080}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      BODY_LIMIT_BYTES: ${BODY_LIMIT_BYTES:-1048576}
+      RATE_LIMIT_MAX_PER_MINUTE: ${RATE_LIMIT_MAX_PER_MINUTE:-100}
+      WAIT_TIMEOUT_MS: ${WAIT_TIMEOUT_MS:-30000}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      DELIVERY_QUEUE_NAME: ${DELIVERY_QUEUE_NAME:-delivery-forwarding}
+      ENABLE_DELIVERY_WORKER: ${ENABLE_DELIVERY_WORKER:-true}
+      MAGIC_LINK_TTL_MINUTES: ${MAGIC_LINK_TTL_MINUTES:-15}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-720}
+    depends_on:
+      - firestore
+      - redis
+    ports:
+      - "8080:8080"
+
+  web:
+    image: node:20-alpine
+    working_dir: /workspace
+    command: >
+      sh -lc "corepack enable &&
+      corepack prepare pnpm@9.0.0 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @snag/web dev -- --hostname 0.0.0.0"
+    environment:
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SERVER_URL: http://localhost:8080
+      NEXT_PUBLIC_WS_URL: ws://localhost:8080/ws
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/node_modules
+      - web_next:/workspace/apps/web/.next
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+
+volumes:
+  node_modules:
+  web_next:

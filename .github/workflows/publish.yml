@@ -22,7 +22,7 @@ jobs:
           node-version: 20
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter snag-cli build
       - name: Publish CLI package
         run: pnpm --filter snag-cli publish --access public --no-git-checks
@@ -43,7 +43,7 @@ jobs:
           node-version: 20
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @snag/sdk build
       - name: Publish SDK package
         run: pnpm --filter @snag/sdk publish --access public --no-git-checks
@@ -59,9 +59,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Build and publish snag-mcp
         working-directory: packages/mcp
         run: |
+          uv sync --frozen
           uv build
           uv publish
         env:

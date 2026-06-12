@@ -57,9 +57,12 @@ const wsRoute: FastifyPluginAsync = async (fastify) => {
           });
 
           registeredToken = endpoint.token;
-          wsHub.join(endpoint.token, socket);
+          wsHub.join(endpoint.token, socket, message.clientType);
 
-          request.log.info({ endpointId: endpoint.id, token: endpoint.token }, 'ws client registered');
+          request.log.info(
+            { endpointId: endpoint.id, token: endpoint.token, clientType: message.clientType },
+            'ws client registered',
+          );
           sendMessage(socket.send.bind(socket), { type: 'registered', endpointId: endpoint.id });
           return;
         }

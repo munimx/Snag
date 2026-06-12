@@ -1,5 +1,27 @@
 import { z } from 'zod';
 
+const envBooleanSchema = z
+  .union([z.boolean(), z.string()])
+  .transform((value, context) => {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+      return true;
+    }
+    if (['0', 'false', 'no', 'off'].includes(normalized)) {
+      return false;
+    }
+
+    context.addIssue({
+      code: 'custom',
+      message: 'Expected a boolean env value: true/false, 1/0, yes/no, or on/off',
+    });
+    return z.NEVER;
+  });
+
 export const configSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   FIREBASE_PROJECT_ID: z.string().min(1).optional(),
@@ -14,7 +36,7 @@ export const configSchema = z.object({
   WAIT_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
   REDIS_URL: z.string().min(1).default('redis://127.0.0.1:6379'),
   DELIVERY_QUEUE_NAME: z.string().min(1).default('delivery-forwarding'),
-  ENABLE_DELIVERY_WORKER: z.coerce.boolean().default(false),
+  ENABLE_DELIVERY_WORKER: envBooleanSchema.default(false),
   MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(24 * 30),
   APP_URL: z.string().url().default('http://localhost:3000'),
