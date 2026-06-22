@@ -2,22 +2,12 @@ import { Command } from 'commander';
 
 import { loadConfig, saveConfig } from '../lib/config.js';
 import { requestMagicLink, verifyMagicLinkToken } from '../lib/http-client.js';
+import { resolveServerUrl } from '../lib/server-url.js';
 
 interface LoginOptions {
   server?: string;
   email: string;
   token?: string;
-}
-
-function resolveServerUrl(explicit?: string): string {
-  if (explicit) {
-    return explicit;
-  }
-  const config = loadConfig();
-  if (config.serverUrl) {
-    return config.serverUrl;
-  }
-  return process.env.SNAG_SERVER_URL ?? 'http://localhost:8080';
 }
 
 export function createLoginCommand(): Command {

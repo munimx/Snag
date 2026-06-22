@@ -21,28 +21,29 @@ snag --help
 1. Node.js 20+
 2. A reachable Snag server (local or hosted)
 
-By default the CLI uses `http://localhost:8080`.  
-Override with `--server <url>` or set `SNAG_SERVER_URL`.
+By default the CLI uses the hosted API at `https://snag-server.fly.dev`.
+Override with `--server <url>` or set `SNAG_SERVER_URL` when running a local or
+self-hosted server.
 
 ## Quick start
 
 1. Start the CLI listener:
 
 ```bash
-snag listen 3000 --server https://snag-server.fly.dev
+snag listen 3000
 ```
 
 2. Send a webhook to the printed public URL (`.../h/<token>`).
 3. Copy the `requestId` from output and inspect it:
 
 ```bash
-snag inspect <requestId> --server https://snag-server.fly.dev
+snag inspect <requestId>
 ```
 
 4. Replay it to another target:
 
 ```bash
-snag replay <requestId> --target https://httpbin.org/post --server https://snag-server.fly.dev
+snag replay <requestId> --target https://httpbin.org/post
 ```
 
 ## Commands
@@ -63,7 +64,7 @@ Options:
 Example:
 
 ```bash
-snag listen 3000 --token my-dev-token --server https://snag-server.fly.dev --json
+snag listen 3000 --token my-dev-token --json
 ```
 
 ### `snag inspect <requestId>`
@@ -79,7 +80,7 @@ Options:
 Example:
 
 ```bash
-snag inspect req_abc123 --server https://snag-server.fly.dev --json
+snag inspect req_abc123 --json
 ```
 
 ### `snag replay <requestId> --target <url>`
@@ -96,7 +97,7 @@ Options:
 Example:
 
 ```bash
-snag replay req_abc123 --target https://httpbin.org/post --server https://snag-server.fly.dev --json
+snag replay req_abc123 --target https://httpbin.org/post --json
 ```
 
 ### `snag login --email <email>`
@@ -112,7 +113,7 @@ Options:
 Example:
 
 ```bash
-snag login --email dev@example.com --server https://snag-server.fly.dev
+snag login --email dev@example.com
 ```
 
 ## Output modes
@@ -139,7 +140,8 @@ Fields:
 
 - `HTTP 401` on authenticated operations: run `snag login` first.
 - `HTTP 404` for inspect/replay: confirm the request ID exists and is accessible.
-- Connection errors: verify `--server` points to a live Snag server.
+- Connection errors: verify `--server` or `SNAG_SERVER_URL` points to a live
+  Snag server.
 
 ## npm README behavior
 

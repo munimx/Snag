@@ -113,7 +113,10 @@ Resolution order for the server URL:
 1. `--server <url>`
 2. `~/.snag/config.json`
 3. `SNAG_SERVER_URL`
-4. `http://localhost:8080`
+4. `https://snag-server.fly.dev`
+
+For local development, pass `--server http://localhost:8080` or set
+`SNAG_SERVER_URL=http://localhost:8080`.
 
 The config file can store:
 
@@ -134,7 +137,9 @@ The config file can store:
 ## Troubleshooting
 
 - `Connection refused`: confirm the Snag server is running and `--server`
-  points at the API, not the web app.
+  points at the API, not the web app. Installed CLI commands default to
+  `https://snag-server.fly.dev`; local stacks must opt into
+  `http://localhost:8080`.
 - `No service is listening on localhost:<port>`: start your local webhook
   handler first, then rerun `snag listen`.
 - `HTTP 404` from `inspect` or `replay`: confirm the request id came from the

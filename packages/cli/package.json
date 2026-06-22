@@ -1,8 +1,28 @@
 {
   "name": "snag-cli",
   "private": false,
-  "version": "0.0.2",
+  "version": "0.0.4",
+  "description": "Open-source webhook inspector CLI for Snag: create public capture URLs, stream live requests, forward them to localhost, inspect payloads, and replay webhooks.",
   "type": "module",
+  "homepage": "https://snag-web-five.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munimx/Snag.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/munimx/Snag/issues"
+  },
+  "keywords": [
+    "webhook",
+    "webhooks",
+    "inspector",
+    "tunnel",
+    "cli",
+    "developer-tools",
+    "mcp",
+    "snag"
+  ],
   "bin": {
     "snag": "dist/index.js"
   },
@@ -18,13 +38,13 @@
     "test": "vitest run src"
   },
   "dependencies": {
-    "@snag/shared": "workspace:*",
     "commander": "^14.0.1",
     "ink": "^6.3.1",
     "react": "^19.2.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@snag/shared": "workspace:*",
     "@types/react": "^19.2.2",
     "@types/ws": "^8.18.1",
     "tsx": "^4.20.6",
