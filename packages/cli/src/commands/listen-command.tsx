@@ -4,6 +4,7 @@ import { Command } from 'commander';
 
 import { getOrCreateToken, loadConfig, saveConfig } from '../lib/config.js';
 import { writeOutput } from '../lib/output.js';
+import { resolveServerUrl } from '../lib/server-url.js';
 import { ensureLocalPortReachable, TunnelClient } from '../lib/tunnel-client.js';
 import { ListenScreen } from '../ui/listen-screen.js';
 import type { CapturedRequest } from '@snag/shared/types';
@@ -15,17 +16,6 @@ interface ListenOptions {
   search?: string;
   json?: boolean;
   silent?: boolean;
-}
-
-function resolveServerUrl(explicit?: string): string {
-  if (explicit) {
-    return explicit;
-  }
-  const config = loadConfig();
-  if (config.serverUrl) {
-    return config.serverUrl;
-  }
-  return process.env.SNAG_SERVER_URL ?? 'http://localhost:8080';
 }
 
 function toWsUrl(httpUrl: string): string {

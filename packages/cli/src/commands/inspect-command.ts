@@ -2,23 +2,13 @@ import { Command } from 'commander';
 
 import { getRequestById } from '../lib/http-client.js';
 import { loadConfig } from '../lib/config.js';
+import { resolveServerUrl } from '../lib/server-url.js';
 import { writeOutput } from '../lib/output.js';
 
 interface InspectOptions {
   server?: string;
   json?: boolean;
   silent?: boolean;
-}
-
-function resolveServerUrl(explicit?: string): string {
-  if (explicit) {
-    return explicit;
-  }
-  const config = loadConfig();
-  if (config.serverUrl) {
-    return config.serverUrl;
-  }
-  return process.env.SNAG_SERVER_URL ?? 'http://localhost:8080';
 }
 
 export function createInspectCommand(): Command {

@@ -2,6 +2,7 @@ import { Command } from 'commander';
 
 import { loadConfig } from '../lib/config.js';
 import { replayRequest } from '../lib/http-client.js';
+import { resolveServerUrl } from '../lib/server-url.js';
 import { writeOutput } from '../lib/output.js';
 
 interface ReplayOptions {
@@ -9,17 +10,6 @@ interface ReplayOptions {
   server?: string;
   json?: boolean;
   silent?: boolean;
-}
-
-function resolveServerUrl(explicit?: string): string {
-  if (explicit) {
-    return explicit;
-  }
-  const config = loadConfig();
-  if (config.serverUrl) {
-    return config.serverUrl;
-  }
-  return process.env.SNAG_SERVER_URL ?? 'http://localhost:8080';
 }
 
 export function createReplayCommand(): Command {
