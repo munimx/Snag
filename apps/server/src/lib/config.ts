@@ -40,6 +40,7 @@ export const configSchema = z.object({
   MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(24 * 30),
   APP_URL: z.string().url().default('http://localhost:3000'),
+  PUBLIC_API_URL: z.string().url().optional(),
 });
 
 export type AppConfig = Readonly<z.infer<typeof configSchema>>;
