@@ -2,6 +2,14 @@
 
 Python MCP server for Snag.
 
+## Hosted usage
+
+```bash
+uvx snag-mcp
+```
+
+By default the MCP server uses `https://snag-server.fly.dev`.
+
 ## Local usage
 
 ```bash
