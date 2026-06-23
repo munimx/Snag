@@ -1,6 +1,6 @@
 import type { CapturedRequest } from '@snag/shared/types';
 import type React from 'react';
-import { IconArrowsDiff } from '@tabler/icons-react';
+import { IconArrowsDiff, IconBolt, IconCopy, IconFilterOff, IconLoader2, IconWebhook } from '@tabler/icons-react';
 
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -10,6 +10,12 @@ interface RequestListProps {
   selectedId: string | null;
   compareId: string | null;
   isLoading: boolean;
+  captureUrl: string;
+  hasActiveFilters: boolean;
+  isSendingTestEvent: boolean;
+  onClearFilters: () => void;
+  onCopyCaptureUrl: () => void;
+  onSendTestEvent: () => void;
   onSelect: (id: string) => void;
   onCompare: (id: string) => void;
 }
@@ -57,6 +63,12 @@ export function RequestList({
   selectedId,
   compareId,
   isLoading,
+  captureUrl,
+  hasActiveFilters,
+  isSendingTestEvent,
+  onClearFilters,
+  onCopyCaptureUrl,
+  onSendTestEvent,
   onSelect,
   onCompare,
 }: RequestListProps): React.JSX.Element {
@@ -73,8 +85,50 @@ export function RequestList({
   if (requests.length === 0) {
     return (
       <div className="p-4">
-        <div className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/30 px-4 py-6 text-center text-sm text-muted-foreground">
-          No requests yet. Send a webhook to your endpoint to populate the feed.
+        <div className="rounded-lg border border-dashed border-outline-variant/25 bg-surface-low/30 p-5">
+          <div className="mx-auto flex size-11 items-center justify-center rounded-lg border border-outline-variant/20 bg-surface-high/60 text-primary">
+            <IconWebhook size={20} />
+          </div>
+          <div className="mt-4 text-center">
+            <h3 className="text-sm font-medium text-foreground">
+              {hasActiveFilters ? 'No matching requests' : 'Waiting for a request'}
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {hasActiveFilters
+                ? 'Clear the filters or send a fresh sample event.'
+                : 'Use this capture URL or generate a sample event.'}
+            </p>
+          </div>
+
+          <code className="mt-4 block truncate rounded-lg bg-background px-3 py-2 font-mono text-xs text-muted-foreground">
+            {captureUrl}
+          </code>
+
+          <div className="mt-4 grid gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onSendTestEvent}
+              disabled={isSendingTestEvent}
+            >
+              {isSendingTestEvent ? (
+                <IconLoader2 className="animate-spin" size={14} />
+              ) : (
+                <IconBolt size={14} />
+              )}
+              Send test event
+            </Button>
+            <Button type="button" variant="outline" onClick={onCopyCaptureUrl}>
+              <IconCopy size={14} />
+              Copy URL
+            </Button>
+            {hasActiveFilters ? (
+              <Button type="button" variant="ghost" onClick={onClearFilters}>
+                <IconFilterOff size={14} />
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
     );

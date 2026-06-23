@@ -15,7 +15,9 @@ import {
 } from '@tabler/icons-react';
 
 import { useEndpointSocket } from '../../hooks/useEndpointSocket';
-import { getRequestDetail, listRequests } from '../../lib/api';
+import { toast } from '../../hooks/use-toast';
+import { getRequestDetail, listRequests, sendTestEvent } from '../../lib/api';
+import { webConfig } from '../../lib/config';
 import { useAuth } from '../auth/AuthProvider';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -56,6 +58,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   const [methodFilter, setMethodFilter] = useState<string>('ALL');
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSendingTestEvent, setIsSendingTestEvent] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isHistoryBannerDismissed, setIsHistoryBannerDismissed] = useState<boolean>(false);
 
@@ -75,7 +78,7 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
     } finally {
       setIsLoading(false);
     }
-  }, [methodFilter, searchFilter, selectedId, token]);
+  }, [methodFilter, searchFilter, token]);
 
   useEffect(() => {
     void loadRequests();
@@ -156,6 +159,8 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
   const { state: socketState } = useEndpointSocket({ token, onMessage: onSocketMessage });
 
   const filteredCount = useMemo(() => requests.length, [requests.length]);
+  const captureUrl = useMemo(() => `${webConfig.serverUrl}/h/${encodeURIComponent(token)}`, [token]);
+  const hasActiveFilters = methodFilter !== 'ALL' || searchFilter.trim().length > 0;
   const socketStatus = getSocketStatusMeta(socketState);
   const stats = useMemo(() => {
     const errored = requests.filter((request) => (request.status ?? 0) >= 400).length;
@@ -169,6 +174,35 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
           );
     return { errored, replayable, avgLatency };
   }, [requests]);
+
+  const handleCopyCaptureUrl = useCallback(async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(captureUrl);
+      toast({ title: 'Capture URL copied', description: captureUrl });
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Copy failed';
+      toast({ title: 'Copy failed', description: message, variant: 'destructive' });
+    }
+  }, [captureUrl]);
+
+  const handleSendTestEvent = useCallback(async (): Promise<void> => {
+    if (isSendingTestEvent) return;
+    setIsSendingTestEvent(true);
+    setError(null);
+
+    try {
+      const response = await sendTestEvent(token);
+      setSelectedId(response.requestId);
+      await loadRequests();
+      toast({ title: 'Test event captured', description: response.requestId });
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Failed to send test event';
+      setError(message);
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } finally {
+      setIsSendingTestEvent(false);
+    }
+  }, [isSendingTestEvent, loadRequests, token]);
 
   return (
     <main className="flex min-h-[calc(100vh-5rem)] flex-col gap-4">
@@ -315,6 +349,19 @@ export function ConsoleClient({ token }: ConsoleClientProps): React.JSX.Element 
             selectedId={selectedId}
             compareId={compareId}
             isLoading={isLoading}
+            captureUrl={captureUrl}
+            hasActiveFilters={hasActiveFilters}
+            isSendingTestEvent={isSendingTestEvent}
+            onClearFilters={() => {
+              setMethodFilter('ALL');
+              setSearchFilter('');
+            }}
+            onCopyCaptureUrl={() => {
+              void handleCopyCaptureUrl();
+            }}
+            onSendTestEvent={() => {
+              void handleSendTestEvent();
+            }}
             onSelect={(id) => {
               setSelectedId(id);
             }}

@@ -20,10 +20,10 @@ export default function LandingPage(): React.JSX.Element {
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/login"
+            href="#try-snag"
             className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
-            Start building
+            Try it live
             <IconArrowRight size={16} />
           </Link>
           <a
@@ -39,7 +39,7 @@ export default function LandingPage(): React.JSX.Element {
       </section>
 
       {/* Try it */}
-      <section className="mx-auto max-w-2xl pb-16">
+      <section id="try-snag" className="mx-auto max-w-2xl scroll-mt-24 pb-16">
         <EndpointCreator />
       </section>
 
@@ -64,7 +64,7 @@ export default function LandingPage(): React.JSX.Element {
             </p>
             <p className="text-muted-foreground/70">
               → Public URL:{' '}
-              <span className="text-primary">https://snag.dev/h/abc123</span>
+              <span className="text-primary">https://snag-server.fly.dev/h/abc123</span>
             </p>
             <p className="mt-3 text-muted-foreground/70">
               <span className="text-emerald-400">POST</span>{' '}
