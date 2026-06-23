@@ -19,6 +19,17 @@ const sampleCaptured = {
   receivedAt: '2026-01-01T00:00:00.000Z',
 };
 
+test('SnagClient defaults to the hosted Snag API', async () => {
+  const fetchFn = async () => new Response('not found', { status: 404 });
+  const client = new SnagClient({
+    fetchFn,
+    websocketFactory: () => new FakeSocket(),
+  });
+
+  const endpoint = client.getEndpoint('token-hosted');
+  assert.equal(endpoint.url, 'https://snag-server.fly.dev/h/token-hosted');
+});
+
 test('SnagClient.createEndpoint falls back to local token and getEndpoint validates input', async () => {
   const fetchFn = async () => new Response('not found', { status: 404 });
   const client = new SnagClient({

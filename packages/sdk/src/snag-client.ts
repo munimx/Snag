@@ -1,8 +1,8 @@
-import { randomBytes } from 'node:crypto';
-
 import { Endpoint } from './endpoint.js';
 import { SnagSdkError } from './errors.js';
 import type { CreateEndpointOptions, EndpointInfo, SnagClientOptions, SnagWebSocketLike } from './types.js';
+
+export const DEFAULT_SNAG_SERVER_URL = 'https://snag-server.fly.dev';
 
 /**
  * Main SDK client for creating and interacting with Snag endpoints.
@@ -14,7 +14,7 @@ export class SnagClient {
   private readonly websocketFactory: (url: string) => SnagWebSocketLike;
 
   public constructor(options: SnagClientOptions = {}) {
-    this.baseUrl = (options.baseUrl ?? 'http://localhost:8080').replace(/\/$/, '');
+    this.baseUrl = (options.baseUrl ?? DEFAULT_SNAG_SERVER_URL).replace(/\/$/, '');
     this.wsUrl = options.wsUrl ?? deriveWsUrl(this.baseUrl);
     this.fetchFn = options.fetchFn ?? fetch;
 
@@ -113,7 +113,13 @@ function deriveWsUrl(baseUrl: string): string {
 }
 
 function createToken(): string {
-  const random = randomBytes(6).toString('hex');
+  if (!globalThis.crypto?.getRandomValues) {
+    throw new SnagSdkError('No Web Crypto implementation found for endpoint token generation.');
+  }
+
+  const bytes = new Uint8Array(6);
+  globalThis.crypto.getRandomValues(bytes);
+  const random = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
   return `sdk_${random}`;
 }
 

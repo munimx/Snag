@@ -1,8 +1,28 @@
 {
   "name": "@snag/sdk",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for Snag webhook inspection: create capture URLs, wait for real requests, subscribe over WebSockets, replay payloads, and generate cURL repros.",
   "type": "module",
+  "homepage": "https://snag-web-five.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munimx/Snag.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/munimx/Snag/issues"
+  },
+  "keywords": [
+    "webhook",
+    "webhooks",
+    "inspector",
+    "sdk",
+    "typescript",
+    "developer-tools",
+    "testing",
+    "snag"
+  ],
   "main": "./dist/cjs/snag-client.js",
   "module": "./dist/esm/snag-client.js",
   "types": "./dist/types/snag-client.d.ts",
@@ -34,7 +54,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "clean": "node -e \"import('node:fs').then((fs) => fs.rmSync('dist', { recursive: true, force: true }))\"",
