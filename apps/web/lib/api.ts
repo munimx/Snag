@@ -28,6 +28,30 @@ export async function createEndpoint(label?: string): Promise<{ token: string; u
   return (await response.json()) as { token: string; url: string };
 }
 
+export async function sendTestEvent(token: string): Promise<{ ok: boolean; requestId: string }> {
+  const response = await fetch(buildUrl(`/h/${encodeURIComponent(token)}?source=snag-onboarding`), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      id: `evt_snag_test_${Date.now()}`,
+      type: 'snag.test_event',
+      createdAt: new Date().toISOString(),
+      data: {
+        object: {
+          id: 'demo_payload',
+          status: 'delivered',
+        },
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to send test event (${response.status})`);
+  }
+
+  return (await response.json()) as { ok: boolean; requestId: string };
+}
+
 export async function listRequests(
   token: string,
   options?: { method?: string; search?: string; limit?: number; cursor?: string },

@@ -75,6 +75,6 @@
   
   <!-- URL -->
   <text x="600" y="580" fill="#5b74b1" font-size="20" font-family="JetBrains Mono, monospace" text-anchor="middle">
-    snag.dev
+    snag-web-five.vercel.app
   </text>
 </svg>

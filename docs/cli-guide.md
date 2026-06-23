@@ -9,6 +9,8 @@ magic link.
 
 ```bash
 npm install -g snag-cli
+# or
+npx snag-cli --help
 ```
 
 For local development from this repository:
@@ -18,6 +20,31 @@ pnpm --filter snag-cli build
 SNAG_SERVER_URL=http://localhost:8080 pnpm --filter snag-cli exec snag --help
 ```
 
+## Hosted Quickstart
+
+Start your local webhook handler on a port. For example, from your app
+repository:
+
+```bash
+npm run dev -- --port 4242
+```
+
+In another terminal, listen with a stable token:
+
+```bash
+npx snag-cli listen 4242 --token stripe-dev
+```
+
+The CLI prints a hosted capture URL like:
+
+```text
+https://snag-server.fly.dev/h/stripe-dev
+```
+
+Use that URL in Stripe, GitHub, Clerk, Supabase, or a test `curl` command. The
+terminal displays every captured request for the token and relays captured
+traffic to `127.0.0.1:<port>`.
+
 ## Local Quickstart
 
 Start Snag:
@@ -26,14 +53,7 @@ Start Snag:
 docker compose up --build
 ```
 
-Start your own webhook handler on a port. For example, from your app
-repository:
-
-```bash
-npm run dev -- --port 4242
-```
-
-In another terminal, listen with a stable token:
+Listen against the local API explicitly:
 
 ```bash
 SNAG_SERVER_URL=http://localhost:8080 snag listen 4242 --token stripe-dev
@@ -55,7 +75,7 @@ already listening on that port before it opens the tunnel.
 ### `snag listen <port>`
 
 ```bash
-snag listen 4242 --token stripe-dev --server http://localhost:8080
+snag listen 4242 --token stripe-dev
 ```
 
 Useful options:
@@ -77,7 +97,7 @@ snag listen 4242 --token ci-webhooks --json \
 ### `snag inspect <requestId>`
 
 ```bash
-snag inspect req_abc123 --server http://localhost:8080
+snag inspect req_abc123
 ```
 
 Use `--json` when piping the captured request into another tool:
@@ -90,8 +110,7 @@ snag inspect req_abc123 --json | jq '.headers, .body'
 
 ```bash
 snag replay req_abc123 \
-  --target http://localhost:4242/webhooks/stripe \
-  --server http://localhost:8080
+  --target http://localhost:4242/webhooks/stripe
 ```
 
 Replay sends the stored method, headers, and body to the target URL. Snag strips
@@ -101,7 +120,7 @@ when you need to validate exact signature behavior.
 ### `snag login --email <email>`
 
 ```bash
-snag login --email dev@example.com --server https://your-snag-api.example.com
+snag login --email dev@example.com
 ```
 
 The CLI stores the resulting session token in `~/.snag/config.json`.

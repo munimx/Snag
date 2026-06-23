@@ -1,6 +1,6 @@
-const DEFAULT_SERVER_URL = 'http://localhost:8080';
-const DEFAULT_WS_URL = 'ws://localhost:8080/ws';
-const DEFAULT_APP_URL = 'http://localhost:3000';
+const DEFAULT_APP_URL = 'https://snag-web-five.vercel.app';
+const DEFAULT_SERVER_URL = 'https://snag-server.fly.dev';
+const DEFAULT_WS_URL = 'wss://snag-server.fly.dev/ws';
 
 export const webConfig = {
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL,
