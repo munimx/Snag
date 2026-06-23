@@ -4,7 +4,7 @@
 export interface SnagClientOptions {
   /**
    * Base HTTP URL for the Snag server.
-   * @defaultValue "http://localhost:8080"
+   * @defaultValue "https://snag-server.fly.dev"
    */
   baseUrl?: string;
   /**
