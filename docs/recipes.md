@@ -1,32 +1,30 @@
 # Webhook Recipes
 
 These recipes show the shortest path from provider dashboard to local handler.
-They assume Snag is running locally:
-
-```bash
-docker compose up --build
-```
+They use the hosted Snag API by default.
 
 Use a stable token per provider so teammates and test fixtures can reuse URLs:
 
 ```bash
-export SNAG_SERVER_URL=http://localhost:8080
+export SNAG_SERVER_URL=https://snag-server.fly.dev
 export SNAG_TOKEN=stripe-dev
 export SNAG_URL="$SNAG_SERVER_URL/h/$SNAG_TOKEN"
 ```
+
+For local Docker development, run `docker compose up --build` and set
+`SNAG_SERVER_URL=http://localhost:8080`.
 
 ## Stripe
 
 Start a Snag listener for your local Stripe handler:
 
 ```bash
-snag listen 4242 --token stripe-dev --server "$SNAG_SERVER_URL"
+npx snag-cli listen 4242 --token stripe-dev
 ```
 
 In the Stripe Dashboard:
 
-- Add an endpoint with URL `http://localhost:8080/h/stripe-dev` for local
-  Docker, or your deployed Snag URL for shared development.
+- Add an endpoint with URL `https://snag-server.fly.dev/h/stripe-dev`.
 - Select focused events such as `checkout.session.completed`,
   `payment_intent.succeeded`, and `customer.subscription.updated`.
 - Copy the endpoint signing secret into your local app environment.
@@ -50,13 +48,12 @@ Notes:
 Start a Snag listener for your local GitHub handler:
 
 ```bash
-snag listen 3000 --token github-dev --server "$SNAG_SERVER_URL"
+npx snag-cli listen 3000 --token github-dev
 ```
 
 In GitHub repository settings:
 
-- Set Payload URL to `http://localhost:8080/h/github-dev` or the deployed Snag
-  capture URL.
+- Set Payload URL to `https://snag-server.fly.dev/h/github-dev`.
 - Set Content type to `application/json`.
 - Set a webhook secret and store it in your local app.
 - Start with `push` and `pull_request` events.
@@ -64,7 +61,7 @@ In GitHub repository settings:
 Inspect the latest event:
 
 ```bash
-snag inspect req_abc123 --server "$SNAG_SERVER_URL" --json | jq '.headers, .body'
+npx snag-cli inspect req_abc123 --json | jq '.headers, .body'
 ```
 
 GitHub sends `x-hub-signature-256` when a secret is configured. Keep raw-body
@@ -75,7 +72,7 @@ verification in your handler.
 Start a listener for your auth app:
 
 ```bash
-snag listen 3001 --token clerk-dev --server "$SNAG_SERVER_URL"
+npx snag-cli listen 3001 --token clerk-dev
 ```
 
 In Clerk:
@@ -98,7 +95,7 @@ project configured.
 Common local setup:
 
 ```bash
-snag listen 54321 --token supabase-dev --server "$SNAG_SERVER_URL"
+npx snag-cli listen 54321 --token supabase-dev
 ```
 
 In Supabase:
@@ -111,7 +108,7 @@ In Supabase:
 Then filter captured events:
 
 ```bash
-snag listen 54321 \
+npx snag-cli listen 54321 \
   --token supabase-dev \
   --method POST \
   --search public.orders
@@ -145,11 +142,11 @@ Turn any captured request into a repeatable command:
 ```ts
 import { SnagClient } from '@snag/sdk';
 
-const client = new SnagClient({ baseUrl: 'http://localhost:8080' });
+const client = new SnagClient();
 const endpoint = client.getEndpoint('stripe-dev');
 const { data } = await endpoint.listRequests({ limit: 1 });
 
-console.log(data[0]?.toCurl('http://localhost:8080'));
+console.log(data[0]?.toCurl('https://snag-server.fly.dev'));
 ```
 
 Before sharing logs or cURL output, remove secrets from headers such as
