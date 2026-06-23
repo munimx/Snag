@@ -39,6 +39,10 @@ const apiRoute: FastifyPluginAsync = async (fastify) => {
   }
 
   function buildCaptureUrl(token: string, request: { protocol: string; headers: Record<string, unknown> }): string {
+    if (fastify.config.PUBLIC_API_URL) {
+      return `${fastify.config.PUBLIC_API_URL.replace(/\/$/, '')}/h/${token}`;
+    }
+
     const forwardedProto = getPreferredHeaderValue(
       request.headers['x-forwarded-proto'] as string | string[] | undefined,
     );

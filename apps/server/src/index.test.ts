@@ -175,6 +175,38 @@ describe('server core', () => {
     await app.close();
   });
 
+  it('uses configured public API URL when returning endpoint URLs', async () => {
+    const { buildApp } = await import('./index.js');
+    const app = await buildApp({
+      DATABASE_URL: 'postgres://localhost:5432/snag',
+      HOST: '127.0.0.1',
+      PORT: 8080,
+      NODE_ENV: 'test',
+      CORS_ORIGINS: 'http://localhost:3000',
+      BODY_LIMIT_BYTES: 1024 * 1024,
+      RATE_LIMIT_MAX_PER_MINUTE: 100,
+      WAIT_TIMEOUT_MS: 50,
+      REDIS_URL: 'redis://127.0.0.1:6379',
+      DELIVERY_QUEUE_NAME: 'delivery-forwarding',
+      ENABLE_DELIVERY_WORKER: false,
+      MAGIC_LINK_TTL_MINUTES: 15,
+      SESSION_TTL_HOURS: 24 * 30,
+      APP_URL: 'http://localhost:3000',
+      PUBLIC_API_URL: 'https://snag-server.fly.dev',
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/endpoints',
+      payload: { token: 'public-url-token' },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.json<{ url: string }>().url).toBe('https://snag-server.fly.dev/h/public-url-token');
+
+    await app.close();
+  });
+
   it('returns request detail and supports deletion', async () => {
     const { buildApp } = await import('./index.js');
     const app = await buildApp({
