@@ -35,7 +35,7 @@ The console and history views are backed by the public Fly.io API endpoint
   <img src="docs/screenshots/history-live.png" alt="Live Snag request history showing persisted webhook captures" width="100%" />
 </p>
 
-## Live Deployment Smoke Test
+## Canonical Live Product
 
 The hosted stack is wired to real endpoints:
 
@@ -45,6 +45,10 @@ The hosted stack is wired to real endpoints:
 | API health | `https://snag-server.fly.dev/health` |
 | Capture URL | `https://snag-server.fly.dev/h/:token` |
 | WebSocket hub | `wss://snag-server.fly.dev/ws` |
+
+These are the canonical public URLs for README examples, CLI defaults, SDK
+defaults, and MCP docs. Local and self-hosted setups can override them with
+environment variables or constructor options.
 
 Verify the live API:
 
@@ -93,6 +97,18 @@ Open the live console at
 
 ## Quick Start
 
+Try the hosted product without running the repo:
+
+```bash
+npx snag-cli listen 3000
+```
+
+Or create a hosted capture URL in the browser at
+`https://snag-web-five.vercel.app`, send the built-in test event, and open the
+console.
+
+## Local Development
+
 Run the full local stack:
 
 ```bash
@@ -131,20 +147,23 @@ Open `http://localhost:3000/console/stripe-dev` to inspect the captured request.
 Start your local webhook handler, then open a Snag tunnel to it:
 
 ```bash
-snag listen 4242 --token stripe-dev --server http://localhost:8080
+npx snag-cli listen 4242 --token stripe-dev
 ```
 
 Snag prints the public capture URL and relays captured requests to
 `127.0.0.1:4242`.
 
 ```text
-http://localhost:8080/h/stripe-dev -> localhost:4242
+https://snag-server.fly.dev/h/stripe-dev -> localhost:4242
 ```
 
 The CLI also supports request inspection, replay, JSON output, and login flows.
 See [`docs/cli-guide.md`](docs/cli-guide.md).
 
 ## TypeScript SDK
+
+The SDK is prepared as `@snag/sdk` in this monorepo. npm publication is pending
+`@snag` scope access; once that access is enabled, the install flow is:
 
 ```bash
 pnpm add @snag/sdk
@@ -153,7 +172,7 @@ pnpm add @snag/sdk
 ```ts
 import { SnagClient } from '@snag/sdk';
 
-const client = new SnagClient({ baseUrl: 'http://localhost:8080' });
+const client = new SnagClient();
 const endpoint = client.getEndpoint('stripe-dev');
 
 const request = await endpoint.waitForRequest({ timeout: 30_000 });
@@ -169,7 +188,7 @@ See [`docs/sdk-guide.md`](docs/sdk-guide.md).
 Run the MCP server with `uvx`:
 
 ```bash
-SNAG_SERVER_URL=http://localhost:8080 uvx snag-mcp
+uvx snag-mcp
 ```
 
 Available tools include:
@@ -259,7 +278,10 @@ pnpm build
 - [CLI workflows and tunnel examples](docs/cli-guide.md)
 - [TypeScript SDK guide](docs/sdk-guide.md)
 - [Provider webhook recipes](docs/recipes.md)
+- [Reliability and operations](docs/reliability.md)
 - [MCP quickstart](docs/mcp-quickstart.md)
+- [Changelog](CHANGELOG.md)
+- [Release notes](docs/releases.md)
 - [npm package CLI README](packages/cli/README.md)
 
 ## Deployment and Release

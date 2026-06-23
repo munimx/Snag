@@ -8,6 +8,8 @@
 
 ```bash
 npm install -g snag-cli
+# or run without installing
+npx snag-cli --help
 ```
 
 Then run:

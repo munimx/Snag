@@ -6,6 +6,9 @@ watch requests, replay traffic, or turn captured payloads into cURL commands.
 
 ## Install
 
+`@snag/sdk` is prepared in this repository as version `0.1.0`. npm publication
+is pending `@snag` scope access. Once that scope is available:
+
 ```bash
 pnpm add @snag/sdk
 ```
@@ -23,7 +26,7 @@ pnpm add ws
 import { SnagClient } from '@snag/sdk';
 
 const client = new SnagClient({
-  baseUrl: process.env.SNAG_SERVER_URL ?? 'http://localhost:8080',
+  baseUrl: process.env.SNAG_SERVER_URL ?? 'https://snag-server.fly.dev',
 });
 
 const endpoint = await client.createEndpoint({ label: 'stripe-dev' });
@@ -42,7 +45,7 @@ can still build endpoint helpers.
 import { SnagClient } from '@snag/sdk';
 
 const client = new SnagClient({
-  baseUrl: 'http://localhost:8080',
+  baseUrl: 'https://snag-server.fly.dev',
 });
 
 const endpoint = client.getEndpoint('stripe-dev');
@@ -100,7 +103,7 @@ import type { SnagWebSocketLike } from '@snag/sdk/types';
 import WebSocket from 'ws';
 
 const client = new SnagClient({
-  baseUrl: 'http://localhost:8080',
+  baseUrl: 'https://snag-server.fly.dev',
   websocketFactory: (url) => new WebSocket(url) as unknown as SnagWebSocketLike,
 });
 
@@ -134,7 +137,7 @@ even when the captured payload is valid.
 ## Generate cURL
 
 ```ts
-const command = latest.toCurl('http://localhost:8080');
+const command = latest.toCurl('https://snag-server.fly.dev');
 console.log(command);
 ```
 
@@ -153,5 +156,11 @@ Then point the SDK at the local API:
 const client = new SnagClient({ baseUrl: 'http://localhost:8080' });
 ```
 
-For WebSocket calls, the SDK derives `ws://localhost:8080/ws` from `baseUrl`
-unless `wsUrl` is supplied explicitly.
+For hosted usage, you can omit `baseUrl` entirely:
+
+```ts
+const client = new SnagClient();
+```
+
+For local WebSocket calls, the SDK derives `ws://localhost:8080/ws` from
+`baseUrl` unless `wsUrl` is supplied explicitly.
